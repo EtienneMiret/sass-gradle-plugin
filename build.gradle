@@ -6,6 +6,9 @@ repositories {
     jcenter()
 }
 
+sourceCompatibility = JavaVersion.VERSION_13
+targetCompatibility = JavaVersion.VERSION_13
+
 dependencies {
     testImplementation 'org.assertj:assertj-core:3.14.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
