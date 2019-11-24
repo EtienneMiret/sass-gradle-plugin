@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class SassGradlePluginFunctionalTest {
 
@@ -31,7 +31,8 @@ class SassGradlePluginFunctionalTest {
     runner.withProjectDir (projectDir);
     BuildResult result = runner.build ();
 
-    assertTrue (result.getOutput ().contains ("Hello from plugin 'io.miret.etienne.gradle.sass.greeting'"));
+    assertThat (result.getOutput ())
+        .contains ("Hello from plugin 'io.miret.etienne.gradle.sass.greeting'");
   }
 
   private void writeString (File file, String string) throws IOException {

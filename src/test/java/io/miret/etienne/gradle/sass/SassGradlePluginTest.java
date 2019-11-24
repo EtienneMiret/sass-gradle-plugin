@@ -4,7 +4,7 @@ import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class SassGradlePluginTest {
 
@@ -13,7 +13,7 @@ class SassGradlePluginTest {
     Project project = ProjectBuilder.builder ().build ();
     project.getPlugins ().apply ("io.miret.etienne.sass");
 
-    assertNotNull (project.getTasks ().findByName ("greeting"));
+    assertThat (project.getTasks ().findByName ("greeting")).isNotNull ();
   }
 
 }
