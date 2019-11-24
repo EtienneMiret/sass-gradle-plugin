@@ -4,13 +4,16 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.tasks.InputDirectory;
+import org.gradle.api.file.FileCollection;
+import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 public class CompileSass extends DefaultTask {
 
@@ -19,10 +22,19 @@ public class CompileSass extends DefaultTask {
   private File outputDir = new File (getProject ().getBuildDir (), "sass");
 
   @Setter
-  @Getter (onMethod_ = {@InputDirectory})
   private File sourceDir = new File (getProject ().getProjectDir (), "src/main/sass");
 
   private List<File> loadPaths = new ArrayList<> ();
+
+  @InputFiles
+  public FileCollection getInputFiles () {
+    return getProject ().files (
+        getProject ().fileTree (sourceDir),
+        loadPaths.stream ()
+          .map (getProject ()::fileTree)
+          .collect (toList ())
+    );
+  }
 
   public void loadPath (File loadPath) {
     loadPaths.add (loadPath);
