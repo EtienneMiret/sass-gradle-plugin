@@ -9,6 +9,8 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CompileSass extends DefaultTask {
 
@@ -19,6 +21,12 @@ public class CompileSass extends DefaultTask {
   @Setter
   @Getter (onMethod_ = {@InputDirectory})
   private File sourceDir = new File (getProject ().getProjectDir (), "src/main/sass");
+
+  private List<File> loadPaths = new ArrayList<> ();
+
+  public void loadPath (File loadPath) {
+    loadPaths.add (loadPath);
+  }
 
   @TaskAction
   public void compileSass () {
@@ -34,9 +42,14 @@ public class CompileSass extends DefaultTask {
 
     getProject ().exec (execSpec -> {
       execSpec.executable (executable);
-      execSpec.args (
-          String.format ("%s:%s", sourceDir, outputDir)
-      );
+
+      List<String> args = new ArrayList<> ();
+      loadPaths.stream ()
+          .map (File::toString)
+          .map ("--load-path="::concat)
+          .forEach (args::add);
+      args.add (String.format ("%s:%s", sourceDir, outputDir));
+      execSpec.args (args);
     });
   }
 

@@ -83,6 +83,36 @@ class SassGradlePluginFunctionalTest {
 
   @Test
   void should_compile_sass () throws IOException {
+    Path out = createExecutable ();
+
+    GradleRunner.create ()
+        .withPluginClasspath ()
+        .withArguments ("compileCustomSass")
+        .withProjectDir (projectDir.toFile ())
+        .build ();
+
+    assertThat (out).hasContent (
+        String.format ("sass %1$s/src/main/sass:%1$s/build/sass", projectDir.toRealPath ())
+    );
+  }
+
+  @Test
+  void should_set_loadPaths () throws IOException {
+    Path out = createExecutable ();
+
+    GradleRunner.create ()
+        .withPluginClasspath ()
+        .withArguments ("compileWithLoadPath")
+        .withProjectDir (projectDir.toFile ())
+        .build ();
+
+    assertThat (out).hasContent (String.format (
+        "sass --load-path=%1$s/sass-lib --load-path=/var/lib/compass %1$s/src/main/sass:%1$s/build/sass",
+        projectDir.toRealPath ()
+    ));
+  }
+
+  private Path createExecutable () throws IOException {
     Path out = projectDir.resolve ("build/out");
     Path sassDir = projectDir.resolve (".gradle/sass/dart-sass");
     Files.createDirectories (sassDir);
@@ -102,16 +132,7 @@ class SassGradlePluginFunctionalTest {
         writer.write (String.format ("echo sass $@ > %s\n", out));
       }
     }
-
-    GradleRunner.create ()
-        .withPluginClasspath ()
-        .withArguments ("compileCustomSass")
-        .withProjectDir (projectDir.toFile ())
-        .build ();
-
-    assertThat (out).hasContent (
-        String.format ("sass %1$s/src/main/sass:%1$s/build/sass", projectDir.toRealPath ())
-    );
+    return out;
   }
 
 }

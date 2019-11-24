@@ -10,3 +10,8 @@ sass {
 }
 
 task compileCustomSass (type: CompileSass)
+
+task compileWithLoadPath (type: CompileSass) {
+  loadPath project.file ("sass-lib")
+  loadPath project.file ("/var/lib/compass")
+}
