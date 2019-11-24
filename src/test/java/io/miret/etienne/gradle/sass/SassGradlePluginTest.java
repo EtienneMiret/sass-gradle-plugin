@@ -2,14 +2,14 @@ package io.miret.etienne.gradle.sass;
 
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class SassGradlePluginTest {
+class SassGradlePluginTest {
 
   @Test
-  public void pluginRegistersATask () {
+  void pluginRegistersATask () {
     Project project = ProjectBuilder.builder ().build ();
     project.getPlugins ().apply ("io.miret.etienne.sass");
 

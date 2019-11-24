@@ -2,7 +2,7 @@ package io.miret.etienne.gradle.sass;
 
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -10,12 +10,12 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SassGradlePluginFunctionalTest {
+class SassGradlePluginFunctionalTest {
 
   @Test
-  public void canRunTask () throws IOException {
+  void canRunTask () throws IOException {
     File projectDir = new File ("build/functionalTest");
     Files.createDirectories (projectDir.toPath ());
     writeString (new File (projectDir, "settings.gradle"), "");
