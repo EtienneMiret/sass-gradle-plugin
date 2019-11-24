@@ -91,9 +91,10 @@ class SassGradlePluginFunctionalTest {
         .withProjectDir (projectDir.toFile ())
         .build ();
 
-    assertThat (out).hasContent (
-        String.format ("sass --style=expanded %1$s/src/main/sass:%1$s/build/sass", projectDir.toRealPath ())
-    );
+    assertThat (out).hasContent (String.format (
+        "sass --style=expanded --source-map-urls=relative %1$s/src/main/sass:%1$s/build/sass",
+        projectDir.toRealPath ()
+    ));
   }
 
   @Test
@@ -107,7 +108,7 @@ class SassGradlePluginFunctionalTest {
         .build ();
 
     assertThat (out).hasContent (String.format (
-        "sass --load-path=%1$s/sass-lib --load-path=/var/lib/compass --style=expanded %1$s/src/main/sass:%1$s/build/sass",
+        "sass --load-path=%1$s/sass-lib --load-path=/var/lib/compass --style=expanded --source-map-urls=relative %1$s/src/main/sass:%1$s/build/sass",
         projectDir.toRealPath ()
     ));
   }
@@ -123,7 +124,7 @@ class SassGradlePluginFunctionalTest {
         .build ();
 
     assertThat (out).hasContent (String.format (
-       "sass --style=compressed %1$s/src/main/sass:%1$s/build/sass",
+       "sass --style=compressed --source-map-urls=relative %1$s/src/main/sass:%1$s/build/sass",
         projectDir.toRealPath ()
     ));
   }
@@ -139,7 +140,7 @@ class SassGradlePluginFunctionalTest {
         .build ();
 
     assertThat (out).hasContent (String.format (
-        "sass --style=expanded --no-charset %1$s/src/main/sass:%1$s/build/sass",
+        "sass --style=expanded --no-charset --source-map-urls=relative %1$s/src/main/sass:%1$s/build/sass",
         projectDir.toRealPath ()
     ));
   }
@@ -155,18 +156,18 @@ class SassGradlePluginFunctionalTest {
         .build ();
 
     assertThat (out).hasContent (String.format (
-       "sass --style=expanded --no-error-css %1$s/src/main/sass:%1$s/build/sass",
+       "sass --style=expanded --no-error-css --source-map-urls=relative %1$s/src/main/sass:%1$s/build/sass",
        projectDir.toRealPath ()
     ));
   }
 
   @Test
-  void should_disable_source_map () throws IOException {
+  void should_disable_source_map_with_absolute_urls () throws IOException {
     Path out = createExecutable ();
 
     GradleRunner.create ()
         .withPluginClasspath ()
-        .withArguments ("compileNoSourceMap")
+        .withArguments ("compileNoSourceMapAbsolute")
         .withProjectDir (projectDir.toFile ())
         .build ();
 
@@ -177,18 +178,82 @@ class SassGradlePluginFunctionalTest {
   }
 
   @Test
-  void should_create_embed_source_map () throws IOException {
+  void should_disable_source_map_with_relative_urls () throws IOException {
     Path out = createExecutable ();
 
     GradleRunner.create ()
         .withPluginClasspath ()
-        .withArguments ("compileEmbedSourceMap")
+        .withArguments ("compileNoSourceMapRelative")
         .withProjectDir (projectDir.toFile ())
         .build ();
 
     assertThat (out).hasContent (String.format (
-       "sass --style=expanded --embed-source-map %1$s/src/main/sass:%1$s/build/sass",
+        "sass --style=expanded --no-source-map %1$s/src/main/sass:%1$s/build/sass",
+        projectDir.toRealPath ()
+    ));
+  }
+
+  @Test
+  void should_create_embed_source_map_with_absolute_urls () throws IOException {
+    Path out = createExecutable ();
+
+    GradleRunner.create ()
+        .withPluginClasspath ()
+        .withArguments ("compileEmbedSourceMapAbsolute")
+        .withProjectDir (projectDir.toFile ())
+        .build ();
+
+    assertThat (out).hasContent (String.format (
+       "sass --style=expanded --embed-source-map --source-map-urls=absolute %1$s/src/main/sass:%1$s/build/sass",
        projectDir.toRealPath ()
+    ));
+  }
+
+  @Test
+  void should_create_embed_source_map_with_relative_urls () throws Exception {
+    Path out = createExecutable ();
+
+    GradleRunner.create ()
+        .withPluginClasspath ()
+        .withArguments ("compileEmbedSourceMapRelative")
+        .withProjectDir (projectDir.toFile ())
+        .build ();
+
+    assertThat (out).hasContent (String.format (
+        "sass --style=expanded --embed-source-map --source-map-urls=relative %1$s/src/main/sass:%1$s/build/sass",
+        projectDir.toRealPath ()
+    ));
+  }
+
+  @Test
+  void should_create_file_source_map_with_absolute_urls () throws IOException {
+    Path out = createExecutable ();
+
+    GradleRunner.create ()
+        .withPluginClasspath ()
+        .withArguments ("compileFileSourceMapAbsolute")
+        .withProjectDir (projectDir.toFile ())
+        .build ();
+
+    assertThat (out).hasContent (String.format (
+        "sass --style=expanded --source-map-urls=absolute %1$s/src/main/sass:%1$s/build/sass",
+        projectDir.toRealPath ()
+    ));
+  }
+
+  @Test
+  void should_create_file_source_map_with_relative_urls () throws IOException {
+    Path out = createExecutable ();
+
+    GradleRunner.create ()
+        .withPluginClasspath ()
+        .withArguments ("compileFileSourceMapRelative")
+        .withProjectDir (projectDir.toFile ())
+        .build ();
+
+    assertThat (out).hasContent (String.format (
+        "sass --style=expanded --source-map-urls=relative %1$s/src/main/sass:%1$s/build/sass",
+        projectDir.toRealPath ()
     ));
   }
 

@@ -30,6 +30,11 @@ public class CompileSass extends DefaultTask {
     file
   }
 
+  enum SourceMapUrls {
+    relative,
+    absolute
+  }
+
   @Setter
   @Getter (onMethod_ = {@OutputDirectory})
   private File outputDir = new File (getProject ().getBuildDir (), "sass");
@@ -52,6 +57,10 @@ public class CompileSass extends DefaultTask {
   @Setter
   @Getter (onMethod_ = {@Input})
   private SourceMap sourceMap = SourceMap.file;
+
+  @Setter
+  @Getter (onMethod_ = {@Input})
+  private SourceMapUrls sourceMapUrls = SourceMapUrls.relative;
 
   @InputFiles
   public FileCollection getInputFiles () {
@@ -100,6 +109,16 @@ public class CompileSass extends DefaultTask {
     return SourceMap.file;
   }
 
+  @Internal
+  public SourceMapUrls getRelative () {
+    return SourceMapUrls.relative;
+  }
+
+  @Internal
+  public SourceMapUrls getAbsolute () {
+    return SourceMapUrls.absolute;
+  }
+
   @TaskAction
   public void compileSass () {
     String command = Os.isFamily (Os.FAMILY_WINDOWS) ? "sass.bat" : "sass";
@@ -136,6 +155,9 @@ public class CompileSass extends DefaultTask {
           break;
         default:
           // nothing to do.
+      }
+      if (sourceMap != SourceMap.none) {
+        args.add (String.format ("--source-map-urls=%s", sourceMapUrls));
       }
       args.add (String.format ("%s:%s", sourceDir, outputDir));
       execSpec.args (args);

@@ -28,14 +28,32 @@ task compileNoErrorCss (type: CompileSass) {
   noErrorCss ()
 }
 
-task compileNoSourceMap (type: CompileSass) {
+task compileNoSourceMapAbsolute (type: CompileSass) {
   sourceMap = none
+  sourceMapUrls = absolute
 }
 
-task compileEmbedSourceMap (type: CompileSass) {
+task compileNoSourceMapRelative (type: CompileSass) {
+  sourceMap = none
+  sourceMapUrls = relative
+}
+
+task compileEmbedSourceMapAbsolute (type: CompileSass) {
   sourceMap = embed
+  sourceMapUrls = absolute
 }
 
-task compileFileSourceMap (type: CompileSass) {
+task compileEmbedSourceMapRelative (type: CompileSass) {
+  sourceMap = embed
+  sourceMapUrls = relative
+}
+
+task compileFileSourceMapAbsolute (type: CompileSass) {
   sourceMap = file
+  sourceMapUrls = absolute
+}
+
+task compileFileSourceMapRelative (type: CompileSass) {
+  sourceMap = file
+  sourceMapUrls = relative
 }
