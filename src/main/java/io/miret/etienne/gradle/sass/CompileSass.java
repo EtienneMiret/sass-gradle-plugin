@@ -5,7 +5,9 @@ import lombok.Setter;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 
@@ -17,6 +19,11 @@ import static java.util.stream.Collectors.toList;
 
 public class CompileSass extends DefaultTask {
 
+  enum Style {
+    expanded,
+    compressed
+  }
+
   @Setter
   @Getter (onMethod_ = {@OutputDirectory})
   private File outputDir = new File (getProject ().getBuildDir (), "sass");
@@ -25,6 +32,10 @@ public class CompileSass extends DefaultTask {
   private File sourceDir = new File (getProject ().getProjectDir (), "src/main/sass");
 
   private List<File> loadPaths = new ArrayList<> ();
+
+  @Setter
+  @Getter (onMethod_ = {@Input})
+  private Style style = Style.expanded;
 
   @InputFiles
   public FileCollection getInputFiles () {
@@ -38,6 +49,16 @@ public class CompileSass extends DefaultTask {
 
   public void loadPath (File loadPath) {
     loadPaths.add (loadPath);
+  }
+
+  @Internal
+  public Style getExpanded () {
+    return Style.expanded;
+  }
+
+  @Internal
+  public Style getCompressed () {
+    return Style.compressed;
   }
 
   @TaskAction
@@ -60,6 +81,7 @@ public class CompileSass extends DefaultTask {
           .map (File::toString)
           .map ("--load-path="::concat)
           .forEach (args::add);
+      args.add (String.format ("--style=%s", style));
       args.add (String.format ("%s:%s", sourceDir, outputDir));
       execSpec.args (args);
     });

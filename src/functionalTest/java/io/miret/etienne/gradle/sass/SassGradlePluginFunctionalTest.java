@@ -92,7 +92,7 @@ class SassGradlePluginFunctionalTest {
         .build ();
 
     assertThat (out).hasContent (
-        String.format ("sass %1$s/src/main/sass:%1$s/build/sass", projectDir.toRealPath ())
+        String.format ("sass --style=expanded %1$s/src/main/sass:%1$s/build/sass", projectDir.toRealPath ())
     );
   }
 
@@ -107,7 +107,23 @@ class SassGradlePluginFunctionalTest {
         .build ();
 
     assertThat (out).hasContent (String.format (
-        "sass --load-path=%1$s/sass-lib --load-path=/var/lib/compass %1$s/src/main/sass:%1$s/build/sass",
+        "sass --load-path=%1$s/sass-lib --load-path=/var/lib/compass --style=expanded %1$s/src/main/sass:%1$s/build/sass",
+        projectDir.toRealPath ()
+    ));
+  }
+
+  @Test
+  void should_use_compressed_style () throws IOException {
+    Path out = createExecutable ();
+
+    GradleRunner.create ()
+        .withPluginClasspath ()
+        .withArguments ("compileCompressed")
+        .withProjectDir (projectDir.toFile ())
+        .build ();
+
+    assertThat (out).hasContent (String.format (
+       "sass --style=compressed %1$s/src/main/sass:%1$s/build/sass",
         projectDir.toRealPath ()
     ));
   }

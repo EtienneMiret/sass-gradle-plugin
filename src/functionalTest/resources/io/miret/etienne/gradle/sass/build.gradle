@@ -15,3 +15,7 @@ task compileWithLoadPath (type: CompileSass) {
   loadPath project.file ("sass-lib")
   loadPath project.file ("/var/lib/compass")
 }
+
+task compileCompressed (type: CompileSass) {
+  style = compressed
+}
