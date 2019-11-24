@@ -27,3 +27,15 @@ task compileNoCharset (type: CompileSass) {
 task compileNoErrorCss (type: CompileSass) {
   noErrorCss ()
 }
+
+task compileNoSourceMap (type: CompileSass) {
+  sourceMap = none
+}
+
+task compileEmbedSourceMap (type: CompileSass) {
+  sourceMap = embed
+}
+
+task compileFileSourceMap (type: CompileSass) {
+  sourceMap = file
+}

@@ -24,6 +24,12 @@ public class CompileSass extends DefaultTask {
     compressed
   }
 
+  enum SourceMap {
+    none,
+    embed,
+    file
+  }
+
   @Setter
   @Getter (onMethod_ = {@OutputDirectory})
   private File outputDir = new File (getProject ().getBuildDir (), "sass");
@@ -42,6 +48,10 @@ public class CompileSass extends DefaultTask {
 
   @Getter (onMethod_ = {@Input})
   private boolean errorCss = true;
+
+  @Setter
+  @Getter (onMethod_ = {@Input})
+  private SourceMap sourceMap = SourceMap.file;
 
   @InputFiles
   public FileCollection getInputFiles () {
@@ -75,6 +85,21 @@ public class CompileSass extends DefaultTask {
     return Style.compressed;
   }
 
+  @Internal
+  public SourceMap getNone () {
+    return SourceMap.none;
+  }
+
+  @Internal
+  public SourceMap getEmbed () {
+    return SourceMap.embed;
+  }
+
+  @Internal
+  public SourceMap getFile () {
+    return SourceMap.file;
+  }
+
   @TaskAction
   public void compileSass () {
     String command = Os.isFamily (Os.FAMILY_WINDOWS) ? "sass.bat" : "sass";
@@ -101,6 +126,16 @@ public class CompileSass extends DefaultTask {
       }
       if (!errorCss) {
         args.add ("--no-error-css");
+      }
+      switch (sourceMap) {
+        case none:
+          args.add ("--no-source-map");
+          break;
+        case embed:
+          args.add ("--embed-source-map");
+          break;
+        default:
+          // nothing to do.
       }
       args.add (String.format ("%s:%s", sourceDir, outputDir));
       execSpec.args (args);
