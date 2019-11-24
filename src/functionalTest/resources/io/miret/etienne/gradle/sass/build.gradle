@@ -19,3 +19,7 @@ task compileWithLoadPath (type: CompileSass) {
 task compileCompressed (type: CompileSass) {
   style = compressed
 }
+
+task compileNoCharset (type: CompileSass) {
+  noCharset ()
+}

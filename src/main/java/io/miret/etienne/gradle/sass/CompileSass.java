@@ -37,6 +37,9 @@ public class CompileSass extends DefaultTask {
   @Getter (onMethod_ = {@Input})
   private Style style = Style.expanded;
 
+  @Getter (onMethod_ = {@Input})
+  private boolean charset = true;
+
   @InputFiles
   public FileCollection getInputFiles () {
     return getProject ().files (
@@ -49,6 +52,10 @@ public class CompileSass extends DefaultTask {
 
   public void loadPath (File loadPath) {
     loadPaths.add (loadPath);
+  }
+
+  public void noCharset () {
+    charset = false;
   }
 
   @Internal
@@ -82,6 +89,9 @@ public class CompileSass extends DefaultTask {
           .map ("--load-path="::concat)
           .forEach (args::add);
       args.add (String.format ("--style=%s", style));
+      if (!charset) {
+        args.add ("--no-charset");
+      }
       args.add (String.format ("%s:%s", sourceDir, outputDir));
       execSpec.args (args);
     });
