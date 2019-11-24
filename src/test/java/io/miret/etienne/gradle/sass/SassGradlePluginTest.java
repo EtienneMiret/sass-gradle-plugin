@@ -19,6 +19,8 @@ class SassGradlePluginTest {
         .isInstanceOf (Download.class);
     assertThat (project.getTasks ().findByName ("installSass"))
         .isInstanceOf (Copy.class);
+    assertThat (project.getTasks ().findByName ("compileSass"))
+        .isInstanceOf (CompileSass.class);
   }
 
 }

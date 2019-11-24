@@ -32,12 +32,17 @@ public class SassGradlePlugin implements Plugin<Project> {
           task.dest (archive);
           task.overwrite (false);
         });
-    project.getTasks ()
+    TaskProvider<Copy> installSass = project.getTasks ()
         .register ("installSass", Copy.class, task -> {
           task.setDescription ("Unpack and install a sass archive.");
           task.dependsOn (downloadSass);
           task.from (downloadedFiles);
           task.into (extension.getDirectory ());
+        });
+    project.getTasks ()
+        .register ("compileSass", CompileSass.class, task -> {
+          task.setDescription ("Compile sass and scss.");
+          task.dependsOn (installSass);
         });
   }
 
