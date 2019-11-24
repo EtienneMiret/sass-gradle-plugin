@@ -13,14 +13,12 @@ import java.io.File;
 public class SassGradlePlugin implements Plugin<Project> {
 
   public void apply (Project project) {
-    File sassDir = project.getRootDir ()
-        .toPath ()
-        .resolve (".gradle/sass")
-        .toFile ();
-    String version = "1.23.7";
+    SassGradlePluginExtension extension = project.getExtensions ()
+        .create ("sass", SassGradlePluginExtension.class, project);
 
-    String archiveName = archiveName (version);
-    File archive = sassDir.toPath ()
+    String archiveName = archiveName (extension.getVersion ());
+    File archive = extension.getDirectory ()
+        .toPath ()
         .resolve ("archive")
         .resolve (archiveName)
         .toFile ();
@@ -30,7 +28,7 @@ public class SassGradlePlugin implements Plugin<Project> {
     TaskProvider<Download> downloadSass = project.getTasks ()
         .register ("downloadSass", Download.class, task -> {
           task.setDescription ("Download a sass archive.");
-          task.src (String.format ("https://github.com/sass/dart-sass/releases/download/%s/%s", version, archiveName));
+          task.src (String.format ("%s/%s/%s", extension.getBaseUrl (), extension.getVersion (), archiveName));
           task.dest (archive);
           task.overwrite (false);
         });
@@ -39,7 +37,7 @@ public class SassGradlePlugin implements Plugin<Project> {
           task.setDescription ("Unpack and install a sass archive.");
           task.dependsOn (downloadSass);
           task.from (downloadedFiles);
-          task.into (sassDir);
+          task.into (extension.getDirectory ());
         });
   }
 
