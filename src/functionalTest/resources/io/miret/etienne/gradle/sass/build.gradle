@@ -1,3 +1,5 @@
+import io.miret.etienne.gradle.sass.CompileSass
+
 plugins {
   id 'io.miret.etienne.sass'
 }
@@ -6,3 +8,5 @@ sass {
   version = 'some.specific.version'
   baseUrl = System.getenv("URL")
 }
+
+task compileCustomSass (type: CompileSass)
