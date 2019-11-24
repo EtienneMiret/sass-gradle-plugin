@@ -144,6 +144,22 @@ class SassGradlePluginFunctionalTest {
     ));
   }
 
+  @Test
+  void should_disable_error_css_output () throws IOException {
+    Path out = createExecutable ();
+
+    GradleRunner.create ()
+        .withPluginClasspath ()
+        .withArguments ("compileNoErrorCss")
+        .withProjectDir (projectDir.toFile ())
+        .build ();
+
+    assertThat (out).hasContent (String.format (
+       "sass --style=expanded --no-error-css %1$s/src/main/sass:%1$s/build/sass",
+       projectDir.toRealPath ()
+    ));
+  }
+
   private Path createExecutable () throws IOException {
     Path out = projectDir.resolve ("build/out");
     Path sassDir = projectDir.resolve (".gradle/sass/dart-sass");

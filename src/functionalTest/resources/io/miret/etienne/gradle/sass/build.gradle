@@ -23,3 +23,7 @@ task compileCompressed (type: CompileSass) {
 task compileNoCharset (type: CompileSass) {
   noCharset ()
 }
+
+task compileNoErrorCss (type: CompileSass) {
+  noErrorCss ()
+}

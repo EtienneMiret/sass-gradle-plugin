@@ -40,6 +40,9 @@ public class CompileSass extends DefaultTask {
   @Getter (onMethod_ = {@Input})
   private boolean charset = true;
 
+  @Getter (onMethod_ = {@Input})
+  private boolean errorCss = true;
+
   @InputFiles
   public FileCollection getInputFiles () {
     return getProject ().files (
@@ -56,6 +59,10 @@ public class CompileSass extends DefaultTask {
 
   public void noCharset () {
     charset = false;
+  }
+
+  public void noErrorCss () {
+    errorCss = false;
   }
 
   @Internal
@@ -91,6 +98,9 @@ public class CompileSass extends DefaultTask {
       args.add (String.format ("--style=%s", style));
       if (!charset) {
         args.add ("--no-charset");
+      }
+      if (!errorCss) {
+        args.add ("--no-error-css");
       }
       args.add (String.format ("%s:%s", sourceDir, outputDir));
       execSpec.args (args);
