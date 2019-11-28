@@ -14,10 +14,8 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Map;
-import java.util.Set;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -26,12 +24,6 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SassGradlePluginFunctionalTest {
-
-  private static final Set<PosixFilePermission> EXECUTABLE_PERMISSIONS = Set.of (
-      PosixFilePermission.OWNER_READ,
-      PosixFilePermission.OWNER_WRITE,
-      PosixFilePermission.OWNER_EXECUTE
-  );
 
   @TempDir
   Path projectDir;
