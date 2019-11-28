@@ -30,6 +30,7 @@ public class SassGradlePlugin implements Plugin<Project> {
           task.setDescription ("Download a sass archive.");
           task.src (String.format ("%s/%s/%s", extension.getBaseUrl (), extension.getVersion (), archiveName));
           task.dest (archive);
+          task.tempAndMove (true);
           task.overwrite (false);
         });
     TaskProvider<Copy> installSass = project.getTasks ()
