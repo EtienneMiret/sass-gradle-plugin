@@ -7,6 +7,7 @@ import org.gradle.api.Project;
 import org.gradle.api.file.FileTree;
 import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.TaskProvider;
+import org.gradle.api.tasks.bundling.War;
 
 import java.io.File;
 
@@ -40,10 +41,16 @@ public class SassGradlePlugin implements Plugin<Project> {
           task.from (downloadedFiles);
           task.into (extension.getDirectory ());
         });
-    project.getTasks ()
+    TaskProvider<CompileSass> compileSass = project.getTasks ()
         .register ("compileSass", CompileSass.class, task -> {
           task.setDescription ("Compile sass and scss.");
           task.dependsOn (installSass);
+        });
+    project.getTasks ()
+        .withType (War.class)
+        .configureEach (task -> {
+          task.dependsOn (compileSass);
+          task.from (compileSass.get ().getOutputDir ());
         });
   }
 

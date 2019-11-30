@@ -1,0 +1,11 @@
+plugins {
+  id 'io.miret.etienne.sass'
+  id 'war'
+}
+
+version = '1.0.0'
+
+sass {
+  version = '1.23.7'
+  baseUrl = System.getenv("URL")
+}
