@@ -8,6 +8,9 @@ to `build/sass`.
 If the [War Plugin][3] is also applied, the generated CSS will also be added to
 the war artifact. 
 
+## Requirements
+* Gradle >= 4.9
+
 ## Usage
 
 First, apply the plugin:
@@ -18,7 +21,7 @@ plugins {
 }
 ```
 
-Optionally, configure it for your needs (default values chown):
+Optionally, configure it for your needs (default values shown):
 
 ```groovy
 sass {
