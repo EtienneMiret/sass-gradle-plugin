@@ -49,6 +49,9 @@ public class CompileSass extends DefaultTask {
   private Style style = Style.expanded;
 
   @Getter (onMethod_ = {@Input})
+  private boolean watch = false;
+
+  @Getter (onMethod_ = {@Input})
   private boolean charset = true;
 
   @Getter (onMethod_ = {@Input})
@@ -82,6 +85,10 @@ public class CompileSass extends DefaultTask {
 
   public void noErrorCss () {
     errorCss = false;
+  }
+
+  public void watch () {
+    watch = true;
   }
 
   @Internal
@@ -140,6 +147,9 @@ public class CompileSass extends DefaultTask {
           .map ("--load-path="::concat)
           .forEach (args::add);
       args.add (String.format ("--style=%s", style));
+      if (watch) {
+        args.add("--watch");
+      }
       if (!charset) {
         args.add ("--no-charset");
       }

@@ -122,6 +122,22 @@ class SassGradlePluginFunctionalTest {
   }
 
   @Test
+  void should_watch () throws IOException {
+    Path out = createExecutable();
+
+    GradleRunner.create ()
+        .withPluginClasspath ()
+        .withArguments ("watch")
+        .withProjectDir (projectDir.toFile ())
+        .build();
+
+    assertThat (out).hasContent (String.format (
+       "sass --style=expanded --watch --source-map-urls=relative %1$s/src/main/sass:%1$s/build/sass",
+       projectDir.toRealPath ()
+    ));
+  }
+
+  @Test
   void should_disable_charset_output () throws IOException {
     Path out = createExecutable ();
 

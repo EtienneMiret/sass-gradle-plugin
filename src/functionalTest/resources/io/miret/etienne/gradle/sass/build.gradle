@@ -20,6 +20,10 @@ task compileCompressed (type: CompileSass) {
   style = compressed
 }
 
+task watch (type: CompileSass) {
+  watch ()
+}
+
 task compileNoCharset (type: CompileSass) {
   noCharset ()
 }
