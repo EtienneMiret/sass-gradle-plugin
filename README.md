@@ -9,7 +9,7 @@ If the [War Plugin][3] is also applied, the generated CSS will also be added to
 the war artifact. 
 
 ## Requirements
-* Gradle >= 4.9
+* Gradle >= 6.0
 
 ## Usage
 
