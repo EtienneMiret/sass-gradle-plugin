@@ -26,7 +26,7 @@ Optionally, configure it for your needs (default values shown):
 ```groovy
 sass {
   // dart-sass version to use:
-  version = '1.23.7'
+  version = '1.24.4'
 
   // Directory where to install dart-sass:
   directory = file ("${rootDir}/.gradle/sass")
