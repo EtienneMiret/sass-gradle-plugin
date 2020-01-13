@@ -61,6 +61,9 @@ compileSass {
   // (Default to emit)
   noErrorCss ()
 
+  // Watch sass files in sourceDir for changes
+  watch ()
+
   // Source map style:
   //  - file: output source map in a separate file (default)
   //  - embed: embed source map in CSS
