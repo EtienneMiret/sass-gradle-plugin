@@ -1,6 +1,7 @@
 package io.miret.etienne.gradle.sass;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.google.common.io.ByteStreams;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.tools.ant.taskdefs.condition.Os;
@@ -12,10 +13,11 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -25,6 +27,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SassGradlePlugin_withWar_FunctionalTest {
@@ -53,10 +56,10 @@ class SassGradlePlugin_withWar_FunctionalTest {
   @BeforeEach
   void setupProject () throws IOException {
     Files.createDirectories (projectDir.resolve ("src/main/sass"));
-    try (var input = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("settings-with-war.gradle")) {
+    try (InputStream input = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("settings-with-war.gradle")) {
       Files.copy (input, projectDir.resolve ("settings.gradle"));
     }
-    try (var input = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("build-with-war.gradle")) {
+    try (InputStream input = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("build-with-war.gradle")) {
       Files.copy (input, projectDir.resolve ("build.gradle"));
     }
   }
@@ -65,17 +68,17 @@ class SassGradlePlugin_withWar_FunctionalTest {
   void should_include_css_in_war () throws IOException {
     GradleRunner runner = GradleRunner.create ();
     runner.withPluginClasspath ();
-    runner.withEnvironment (Map.of ("URL", server.baseUrl ()));
+    runner.withEnvironment (singletonMap ("URL", server.baseUrl ()));
     runner.withArguments ("assemble");
     runner.withProjectDir (projectDir.toFile ());
     runner.build ();
 
     try (
-        var input = Files.newInputStream (projectDir.resolve ("build/libs/cool-webapp-1.0.0.war"));
-        var zip = new ZipInputStream (input)
+        InputStream input = Files.newInputStream (projectDir.resolve ("build/libs/cool-webapp-1.0.0.war"));
+        ZipInputStream zip = new ZipInputStream (input)
     ) {
-      var entries = new ArrayList<ZipEntry> ();
-      for (var entry = zip.getNextEntry (); entry != null; entry = zip.getNextEntry ()) {
+      List<ZipEntry> entries = new ArrayList<> ();
+      for (ZipEntry entry = zip.getNextEntry (); entry != null; entry = zip.getNextEntry ()) {
         entries.add (entry);
       }
       assertThat (entries)
@@ -85,26 +88,26 @@ class SassGradlePlugin_withWar_FunctionalTest {
   }
 
   private byte[] createArchive () throws IOException {
-    var bytes = new ByteArrayOutputStream ();
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream ();
     if (Os.isFamily (Os.FAMILY_WINDOWS)) {
       try (
-          var zip = new ZipOutputStream (bytes);
-          var sass = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("sass.bat")
+          ZipOutputStream zip = new ZipOutputStream (bytes);
+          InputStream sass = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("sass.bat")
       ) {
         zip.putNextEntry (new ZipEntry ("dart-sass/sass.bat"));
-        sass.transferTo (zip);
+        ByteStreams.copy (sass, zip);
       }
     } else {
       try (
-          var gz = new GZIPOutputStream (bytes);
-          var tgz = new TarArchiveOutputStream (gz);
-          var sass = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("sass.sh")
+          GZIPOutputStream gz = new GZIPOutputStream (bytes);
+          TarArchiveOutputStream tgz = new TarArchiveOutputStream (gz);
+          InputStream sass = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("sass.sh")
       ) {
-        var entry = new TarArchiveEntry ("dart-sass/sass");
+        TarArchiveEntry entry = new TarArchiveEntry ("dart-sass/sass");
         entry.setSize (sass.available ());
         entry.setMode (0755);
         tgz.putArchiveEntry (entry);
-        sass.transferTo (tgz);
+        ByteStreams.copy (sass, tgz);
         tgz.closeArchiveEntry ();
       }
     }
