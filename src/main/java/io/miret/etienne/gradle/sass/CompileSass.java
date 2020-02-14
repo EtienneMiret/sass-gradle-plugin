@@ -10,7 +10,10 @@ import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.workers.WorkQueue;
+import org.gradle.workers.WorkerExecutor;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +21,8 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 public class CompileSass extends DefaultTask {
+
+  private final WorkerExecutor workerExecutor;
 
   enum Style {
     expanded,
@@ -47,6 +52,9 @@ public class CompileSass extends DefaultTask {
   @Setter
   @Getter (onMethod_ = {@Input})
   private Style style = Style.expanded;
+
+  @Getter (onMethod_ = {@Input})
+  private boolean watch = false;
 
   @Getter (onMethod_ = {@Input})
   private boolean charset = true;
@@ -84,6 +92,10 @@ public class CompileSass extends DefaultTask {
     errorCss = false;
   }
 
+  public void watch () {
+    watch = true;
+  }
+
   @Internal
   public Style getExpanded () {
     return Style.expanded;
@@ -119,6 +131,12 @@ public class CompileSass extends DefaultTask {
     return SourceMapUrls.absolute;
   }
 
+  @Inject
+  public CompileSass (WorkerExecutor workerExecutor) {
+    super();
+    this.workerExecutor = workerExecutor;
+  }
+
   @TaskAction
   public void compileSass () {
     String command = Os.isFamily (Os.FAMILY_WINDOWS) ? "sass.bat" : "sass";
@@ -131,36 +149,18 @@ public class CompileSass extends DefaultTask {
         .resolve (command)
         .toFile ();
 
-    getProject ().exec (execSpec -> {
-      execSpec.executable (executable);
-
-      List<String> args = new ArrayList<> ();
-      loadPaths.stream ()
-          .map (File::toString)
-          .map ("--load-path="::concat)
-          .forEach (args::add);
-      args.add (String.format ("--style=%s", style));
-      if (!charset) {
-        args.add ("--no-charset");
-      }
-      if (!errorCss) {
-        args.add ("--no-error-css");
-      }
-      switch (sourceMap) {
-        case none:
-          args.add ("--no-source-map");
-          break;
-        case embed:
-          args.add ("--embed-source-map");
-          break;
-        default:
-          // nothing to do.
-      }
-      if (sourceMap != SourceMap.none) {
-        args.add (String.format ("--source-map-urls=%s", sourceMapUrls));
-      }
-      args.add (String.format ("%s:%s", sourceDir, outputDir));
-      execSpec.args (args);
+    WorkQueue workQueue = workerExecutor.noIsolation();
+    workQueue.submit(CompileSassWorkAction.class, compileSassWorkParameters -> {
+      compileSassWorkParameters.getExecutable ().set (executable);
+      compileSassWorkParameters.getLoadPaths ().setFrom (loadPaths);
+      compileSassWorkParameters.getOutputDir ().set (outputDir);
+      compileSassWorkParameters.getSourceDir ().set (sourceDir);
+      compileSassWorkParameters.getStyle ().set (style);
+      compileSassWorkParameters.getSourceMap ().set (sourceMap);
+      compileSassWorkParameters.getSourceMapUrls ().set (sourceMapUrls);
+      compileSassWorkParameters.getWatch ().set (watch);
+      compileSassWorkParameters.getCharset ().set (charset);
+      compileSassWorkParameters.getErrorCss ().set (errorCss);
     });
   }
 

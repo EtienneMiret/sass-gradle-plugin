@@ -8,6 +8,9 @@ to `build/sass`.
 If the [War Plugin][3] is also applied, the generated CSS will also be added to
 the war artifact. 
 
+## Requirements
+* Gradle >= 6.0
+
 ## Usage
 
 First, apply the plugin:
@@ -18,12 +21,12 @@ plugins {
 }
 ```
 
-Optionally, configure it for your needs (default values chown):
+Optionally, configure it for your needs (default values shown):
 
 ```groovy
 sass {
   // dart-sass version to use:
-  version = '1.23.7'
+  version = '1.24.4'
 
   // Directory where to install dart-sass:
   directory = file ("${rootDir}/.gradle/sass")
@@ -57,6 +60,9 @@ compileSass {
   // When an error occurs, do not emit a stylesheet describing it:
   // (Default to emit)
   noErrorCss ()
+
+  // Watch sass files in sourceDir for changes
+  watch ()
 
   // Source map style:
   //  - file: output source map in a separate file (default)
