@@ -1,6 +1,7 @@
 package io.miret.etienne.gradle.sass;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.google.common.io.ByteStreams;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.testkit.runner.GradleRunner;
 import org.junit.jupiter.api.AfterEach;
@@ -15,12 +16,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SassGradlePluginFunctionalTest {
@@ -56,13 +57,13 @@ class SassGradlePluginFunctionalTest {
       server.stubFor (get (urlMatching ("/some.specific.version/dart-sass-.*"))
           .willReturn (aResponse ()
               .withStatus (200)
-              .withBody (input.readAllBytes ())
+              .withBody (ByteStreams.toByteArray (input))
           ));
     }
 
     GradleRunner runner = GradleRunner.create ();
     runner.withPluginClasspath ();
-    runner.withEnvironment (Map.of ("URL", server.baseUrl ()));
+    runner.withEnvironment (singletonMap ("URL", server.baseUrl ()));
     runner.withArguments ("installSass");
     runner.withProjectDir (projectDir.toFile ());
     runner.build ();
