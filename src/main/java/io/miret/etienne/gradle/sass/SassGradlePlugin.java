@@ -5,6 +5,7 @@ import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileTree;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.War;
@@ -17,17 +18,14 @@ public class SassGradlePlugin implements Plugin<Project> {
     SassGradlePluginExtension extension = project.getExtensions ()
         .create ("sass", SassGradlePluginExtension.class, project);
 
-    String archiveName = archiveName (extension.getVersion ());
-    File archive = extension.getDirectory ()
-        .toPath ()
-        .resolve ("archive")
-        .resolve (archiveName)
-        .toFile ();
-    final FileTree downloadedFiles = Os.isFamily (Os.FAMILY_WINDOWS)
-        ? project.zipTree (archive)
-        : project.tarTree (archive);
     TaskProvider<Download> downloadSass = project.getTasks ()
         .register ("downloadSass", Download.class, task -> {
+          String archiveName = archiveName (extension.getVersion ());
+          File archive = extension.getDirectory ()
+              .toPath ()
+              .resolve ("archive")
+              .resolve (archiveName)
+              .toFile ();
           task.setDescription ("Download a sass archive.");
           task.src (String.format ("%s/%s/%s", extension.getBaseUrl (), extension.getVersion (), archiveName));
           task.dest (archive);
@@ -36,6 +34,10 @@ public class SassGradlePlugin implements Plugin<Project> {
         });
     TaskProvider<Copy> installSass = project.getTasks ()
         .register ("installSass", Copy.class, task -> {
+          Provider<FileTree> downloadedFiles = downloadSass.map (Download::getDest)
+              .map (archive -> Os.isFamily (Os.FAMILY_WINDOWS)
+                  ? project.zipTree (archive)
+                  : project.tarTree (archive));
           task.setDescription ("Unpack and install a sass archive.");
           task.dependsOn (downloadSass);
           task.from (downloadedFiles);
@@ -50,7 +52,7 @@ public class SassGradlePlugin implements Plugin<Project> {
         .withType (War.class)
         .configureEach (task -> {
           task.dependsOn (compileSass);
-          task.from (compileSass.get ().getOutputDir ());
+          task.from (compileSass.map (CompileSass::getOutputDir));
         });
   }
 

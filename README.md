@@ -17,7 +17,7 @@ First, apply the plugin:
 
 ```groovy
 plugins {
-  id 'io.miret.etienne.sass' version '1.1.0'
+  id 'io.miret.etienne.sass' version '1.1.1'
 }
 ```
 
