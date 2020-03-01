@@ -18,7 +18,10 @@ import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermissions;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static java.util.Collections.singletonMap;
@@ -72,6 +75,27 @@ class SassGradlePluginFunctionalTest {
         .isNotEmptyDirectory ();
     assertThat (projectDir.resolve (".gradle/sass/dart-sass/sass"))
         .hasContent ("foo\nbar\nbaz\n");
+  }
+
+  @Test
+  void should_download_specified_version () throws IOException {
+    String archive = Os.isFamily (Os.FAMILY_WINDOWS) ? "archive.zip" : "archive.tgz";
+    try (InputStream input = SassGradlePluginFunctionalTest.class.getResourceAsStream (archive)) {
+      server.stubFor (get (anyUrl ())
+          .willReturn (ok ()
+              .withStatus (200)
+              .withBody (ByteStreams.toByteArray (input))
+          ));
+    }
+
+    GradleRunner.create ()
+        .withPluginClasspath ()
+        .withProjectDir (projectDir.toFile ())
+        .withEnvironment (singletonMap ("URL", server.baseUrl ()))
+        .withArguments ("downloadSass")
+        .build ();
+
+    server.verify (getRequestedFor (urlMatching ("/some\\.specific\\.version/dart-sass-some\\.specific\\.version-.*")));
   }
 
   @Test
