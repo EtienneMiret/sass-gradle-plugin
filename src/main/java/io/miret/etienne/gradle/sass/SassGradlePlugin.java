@@ -5,6 +5,7 @@ import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileTree;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.War;
@@ -33,10 +34,10 @@ public class SassGradlePlugin implements Plugin<Project> {
         });
     TaskProvider<Copy> installSass = project.getTasks ()
         .register ("installSass", Copy.class, task -> {
-          File archive = downloadSass.get ().getDest ();
-          FileTree downloadedFiles = Os.isFamily (Os.FAMILY_WINDOWS)
-              ? project.zipTree (archive)
-              : project.tarTree (archive);
+          Provider<FileTree> downloadedFiles = downloadSass.map (Download::getDest)
+              .map (archive -> Os.isFamily (Os.FAMILY_WINDOWS)
+                  ? project.zipTree (archive)
+                  : project.tarTree (archive));
           task.setDescription ("Unpack and install a sass archive.");
           task.dependsOn (downloadSass);
           task.from (downloadedFiles);
@@ -51,7 +52,7 @@ public class SassGradlePlugin implements Plugin<Project> {
         .withType (War.class)
         .configureEach (task -> {
           task.dependsOn (compileSass);
-          task.from (compileSass.get ().getOutputDir ());
+          task.from (compileSass.map (CompileSass::getOutputDir));
         });
   }
 
