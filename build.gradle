@@ -7,8 +7,10 @@ repositories {
     jcenter()
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+def javaVersion = JavaVersion.VERSION_1_8
+
+sourceCompatibility = javaVersion
+targetCompatibility = javaVersion
 
 configurations {
     functionalTestImplementation.extendsFrom testImplementation
@@ -71,4 +73,10 @@ check {
 
 javadoc {
     failOnError false
+}
+
+publishPlugins {
+    if (JavaVersion.current() != javaVersion) {
+        throw new GradleException ("This build must be ran with Java ${javaVersion}.")
+    }
 }
