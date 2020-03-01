@@ -17,17 +17,14 @@ public class SassGradlePlugin implements Plugin<Project> {
     SassGradlePluginExtension extension = project.getExtensions ()
         .create ("sass", SassGradlePluginExtension.class, project);
 
-    String archiveName = archiveName (extension.getVersion ());
-    File archive = extension.getDirectory ()
-        .toPath ()
-        .resolve ("archive")
-        .resolve (archiveName)
-        .toFile ();
-    final FileTree downloadedFiles = Os.isFamily (Os.FAMILY_WINDOWS)
-        ? project.zipTree (archive)
-        : project.tarTree (archive);
     TaskProvider<Download> downloadSass = project.getTasks ()
         .register ("downloadSass", Download.class, task -> {
+          String archiveName = archiveName (extension.getVersion ());
+          File archive = extension.getDirectory ()
+              .toPath ()
+              .resolve ("archive")
+              .resolve (archiveName)
+              .toFile ();
           task.setDescription ("Download a sass archive.");
           task.src (String.format ("%s/%s/%s", extension.getBaseUrl (), extension.getVersion (), archiveName));
           task.dest (archive);
@@ -36,6 +33,10 @@ public class SassGradlePlugin implements Plugin<Project> {
         });
     TaskProvider<Copy> installSass = project.getTasks ()
         .register ("installSass", Copy.class, task -> {
+          File archive = downloadSass.get ().getDest ();
+          FileTree downloadedFiles = Os.isFamily (Os.FAMILY_WINDOWS)
+              ? project.zipTree (archive)
+              : project.tarTree (archive);
           task.setDescription ("Unpack and install a sass archive.");
           task.dependsOn (downloadSass);
           task.from (downloadedFiles);
