@@ -34,7 +34,7 @@ test {
     useJUnitPlatform()
 }
 
-version '1.1.1'
+version '1.1.2-SNAPSHOT'
 group 'io.miret.etienne.gradle'
 
 pluginBundle {
