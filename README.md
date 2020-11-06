@@ -44,7 +44,7 @@ compileSass {
   outputDir = project.file ("${buildDir}/sass")
 
   // Source directory containing sass to compile:
-  sourceDir = project.file (${projectDir}/src/main/sass)
+  sourceDir = project.file ("${projectDir}/src/main/sass")
 
   // Adds a directory to sass load path (default is empty):
   loadPath project.file ('sass-lib')
