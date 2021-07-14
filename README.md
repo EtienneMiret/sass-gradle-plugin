@@ -62,6 +62,7 @@ compileSass {
   noErrorCss ()
 
   // Watch sass files in sourceDir for changes
+  // (Default is to not to watch, compile once and terminate)
   watch ()
 
   // Source map style:
