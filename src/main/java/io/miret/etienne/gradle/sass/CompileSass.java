@@ -5,11 +5,7 @@ import lombok.Setter;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.InputFiles;
-import org.gradle.api.tasks.Internal;
-import org.gradle.api.tasks.OutputDirectory;
-import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.*;
 import org.gradle.workers.WorkQueue;
 import org.gradle.workers.WorkerExecutor;
 
@@ -80,6 +76,21 @@ public class CompileSass extends DefaultTask {
     );
   }
 
+  @InputFile
+  public File getExecutable () {
+    String command = Os.isFamily (Os.FAMILY_WINDOWS) ? "sass.bat" : "sass";
+    SassGradlePluginExtension sassExtension = getProject ()
+        .getExtensions ()
+        .findByType (SassGradlePluginExtension.class);
+    assert sassExtension != null;
+    return sassExtension.getDirectory ()
+        .toPath ()
+        .resolve (sassExtension.getVersion ())
+        .resolve ("dart-sass")
+        .resolve (command)
+        .toFile ();
+  }
+
   public void loadPath (File loadPath) {
     loadPaths.add (loadPath);
   }
@@ -139,15 +150,7 @@ public class CompileSass extends DefaultTask {
 
   @TaskAction
   public void compileSass () {
-    String command = Os.isFamily (Os.FAMILY_WINDOWS) ? "sass.bat" : "sass";
-    File executable = getProject ()
-        .getExtensions ()
-        .findByType (SassGradlePluginExtension.class)
-        .getDirectory ()
-        .toPath ()
-        .resolve ("dart-sass")
-        .resolve (command)
-        .toFile ();
+    File executable = getExecutable ();
 
     WorkQueue workQueue = workerExecutor.noIsolation();
     workQueue.submit(CompileSassWorkAction.class, compileSassWorkParameters -> {

@@ -73,7 +73,7 @@ class SassGradlePluginFunctionalTest {
 
     assertThat (projectDir.resolve (".gradle/sass/archive"))
         .isNotEmptyDirectory ();
-    assertThat (projectDir.resolve (".gradle/sass/dart-sass/sass"))
+    assertThat (projectDir.resolve (".gradle/sass/some.specific.version/dart-sass/sass"))
         .hasContent ("foo\nbar\nbaz\n");
   }
 
@@ -292,7 +292,7 @@ class SassGradlePluginFunctionalTest {
 
   private Path createExecutable () throws IOException {
     Path out = projectDir.resolve ("build/out");
-    Path sassDir = projectDir.resolve (".gradle/sass/dart-sass");
+    Path sassDir = projectDir.resolve (".gradle/sass/some.specific.version/dart-sass");
     Files.createDirectories (sassDir);
     Files.createDirectories (projectDir.resolve ("src/main/sass"));
     if (Os.isFamily (Os.FAMILY_WINDOWS)) {

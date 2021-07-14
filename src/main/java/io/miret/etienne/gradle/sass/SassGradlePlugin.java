@@ -41,7 +41,7 @@ public class SassGradlePlugin implements Plugin<Project> {
           task.setDescription ("Unpack and install a sass archive.");
           task.dependsOn (downloadSass);
           task.from (downloadedFiles);
-          task.into (extension.getDirectory ());
+          task.into (new File (extension.getDirectory (), extension.getVersion ()));
         });
     TaskProvider<CompileSass> compileSass = project.getTasks ()
         .register ("compileSass", CompileSass.class, task -> {
