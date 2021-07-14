@@ -76,6 +76,14 @@ compileSass {
 }
 ```
 
+## Samples
+
+### Simple
+
+The easiest way to use this plugin is to apply it, along with the war
+plugin, and put your sass files under `src/main/sass`.
+See [samples/simple](samples/simple/build.gradle).
+
 [1]: https://gradle.org/ 
 [2]: https://sass-lang.com/dart-sass
 [3]: https://docs.gradle.org/current/userguide/war_plugin.html
