@@ -1,0 +1,22 @@
+/*
+ * The `watch ()` option instruct this plugin to keep running, watch for
+ * source changes and recompile them on the fly. While this may be useful
+ * during development, you probably want to set this option on a separate task
+ * that isn’t a dependency of the `assemble` task.
+ */
+
+import io.miret.etienne.gradle.sass.CompileSass
+
+plugins {
+  id 'war'
+  id 'io.miret.etienne.sass' version '1.1.2'
+}
+
+/*
+ * Note that this creates an additional `watch` task. The `compileSass` task
+ * still exists with the default configuration.
+ */
+task watchSass (type: CompileSass) {
+  dependsOn installSass
+  watch ()
+}

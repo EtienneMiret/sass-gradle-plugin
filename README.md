@@ -94,6 +94,13 @@ Furthermore, the output will probably need to be consumed by that other task.
 See [samples/jar](samples/jar/build.gradle) for an example with the `java`
 plugin and its `jar` task.
 
+### Watching for changes
+
+The `watch ()` option prevents the `compileSass` task to terminates.
+It is therefore better used on a copy of this task that isn’t a dependency
+of the `assemble` task.
+See [samples/watch](samples/watch/build.gradle).
+
 [1]: https://gradle.org/ 
 [2]: https://sass-lang.com/dart-sass
 [3]: https://docs.gradle.org/current/userguide/war_plugin.html
