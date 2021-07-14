@@ -84,6 +84,16 @@ The easiest way to use this plugin is to apply it, along with the war
 plugin, and put your sass files under `src/main/sass`.
 See [samples/simple](samples/simple/build.gradle).
 
+### Without the war plugin
+
+If you’re not using the war plugin,
+you need to explicitly call the `compileSass` task.
+Usually, this is done by making another task depend on it.
+
+Furthermore, the output will probably need to be consumed by that other task.
+See [samples/jar](samples/jar/build.gradle) for an example with the `java`
+plugin and its `jar` task.
+
 [1]: https://gradle.org/ 
 [2]: https://sass-lang.com/dart-sass
 [3]: https://docs.gradle.org/current/userguide/war_plugin.html

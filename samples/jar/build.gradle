@@ -1,0 +1,28 @@
+/*
+ * Using this plugin while creating a jar rather than a war:
+ *  - apply it,
+ *  - apply the `java` plugin,
+ *  - configure the `jar` task to gather the output of the `compileSass` task and
+ *  - put the sass sources under `src/main/sass`.
+ *
+ * In this configuration, the `style.scss` file gets compiled to a `style.css`
+ * and a `style.css.map` files at the root of the jar.
+ */
+
+plugins {
+  id 'java'
+  id 'io.miret.etienne.sass' version '1.1.2'
+}
+
+jar {
+  dependsOn compileSass
+  from compileSass.outputDir
+}
+
+/*
+ * Since this plugin is updated less often than the sass compiler,
+ * it’s probably a good idea to specify a recent sass release.
+ */
+sass {
+  version = '1.35.2'
+}
