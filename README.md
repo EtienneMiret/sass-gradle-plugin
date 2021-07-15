@@ -62,6 +62,7 @@ compileSass {
   noErrorCss ()
 
   // Watch sass files in sourceDir for changes
+  // (Default is to not to watch, compile once and terminate)
   watch ()
 
   // Source map style:
@@ -74,6 +75,31 @@ compileSass {
   sourceMapUrls = relative
 }
 ```
+
+## Samples
+
+### Simple
+
+The easiest way to use this plugin is to apply it, along with the war
+plugin, and put your sass files under `src/main/sass`.
+See [samples/simple](samples/simple/build.gradle).
+
+### Without the war plugin
+
+If you’re not using the war plugin,
+you need to explicitly call the `compileSass` task.
+Usually, this is done by making another task depend on it.
+
+Furthermore, the output will probably need to be consumed by that other task.
+See [samples/jar](samples/jar/build.gradle) for an example with the `java`
+plugin and its `jar` task.
+
+### Watching for changes
+
+The `watch ()` option prevents the `compileSass` task to terminates.
+It is therefore better used on a copy of this task that isn’t a dependency
+of the `assemble` task.
+See [samples/watch](samples/watch/build.gradle).
 
 [1]: https://gradle.org/ 
 [2]: https://sass-lang.com/dart-sass

@@ -1,0 +1,14 @@
+/*
+ * Simplest usage of this plugin:
+ *  - apply it,
+ *  - apply the war plugin and
+ *  - put the sass sources under `src/main/sass`.
+ *
+ * In this configuration, the `style.scss` file gets compiled to a `style.css`
+ * and a `style.css.map` files at the root of the war.
+ */
+
+plugins {
+  id 'war'
+  id 'io.miret.etienne.sass' version '1.1.2'
+}
