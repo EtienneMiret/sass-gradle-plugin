@@ -59,13 +59,14 @@ class SassGradlePlugin_withWar_FunctionalTest {
     try (InputStream input = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("settings-with-war.gradle")) {
       Files.copy (input, projectDir.resolve ("settings.gradle"));
     }
-    try (InputStream input = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("build-with-war.gradle")) {
-      Files.copy (input, projectDir.resolve ("build.gradle"));
-    }
   }
 
   @Test
   void should_include_css_in_war () throws IOException {
+    try (InputStream input = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("build-with-war.gradle")) {
+      Files.copy (input, projectDir.resolve ("build.gradle"));
+    }
+
     GradleRunner runner = GradleRunner.create ();
     runner.withPluginClasspath ();
     runner.withEnvironment (singletonMap ("URL", server.baseUrl ()));
@@ -84,6 +85,33 @@ class SassGradlePlugin_withWar_FunctionalTest {
       assertThat (entries)
           .extracting (ZipEntry::getName)
           .contains ("style.css");
+    }
+  }
+
+  @Test
+  void should_put_css_in_custom_location () throws Exception {
+    try (InputStream input = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("war-custom-path.gradle")) {
+      Files.copy (input, projectDir.resolve ("build.gradle"));
+    }
+
+    GradleRunner runner = GradleRunner.create ();
+    runner.withPluginClasspath ();
+    runner.withEnvironment (singletonMap ("URL", server.baseUrl ()));
+    runner.withArguments ("assemble");
+    runner.withProjectDir (projectDir.toFile ());
+    runner.build ();
+
+    try (
+        InputStream input = Files.newInputStream (projectDir.resolve ("build/libs/cool-webapp-1.0.0.war"));
+        ZipInputStream zip = new ZipInputStream (input)
+    ) {
+      List<ZipEntry> entries = new ArrayList<> ();
+      for (ZipEntry entry = zip.getNextEntry (); entry != null; entry = zip.getNextEntry ()) {
+        entries.add (entry);
+      }
+      assertThat (entries)
+          .extracting (ZipEntry::getName)
+          .contains ("styles/style.css");
     }
   }
 

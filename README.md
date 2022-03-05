@@ -43,6 +43,9 @@ compileSass {
   // Directory where to output generated CSS:
   outputDir = project.file ("${buildDir}/sass")
 
+  // Sub path where to copy generated CSS, eg relative to war root:
+  destPath = "."
+
   // Source directory containing sass to compile:
   sourceDir = project.file ("${projectDir}/src/main/sass")
 
@@ -83,6 +86,15 @@ compileSass {
 The easiest way to use this plugin is to apply it, along with the war
 plugin, and put your sass files under `src/main/sass`.
 See [samples/simple](samples/simple/build.gradle).
+
+### With custom paths
+
+You can customize the path where to pickup the SASS sources (`sourceDir`)
+as well as the path inside the war where to put the generated CSS (`destPath`).
+See [samples/custom-paths](samples/custom-paths/build.gradle).
+
+Note that the `outputDir` is an intermediate folder where the CSS is output
+before being copied to the war. There should be no need to customize it.
 
 ### Without the war plugin
 

@@ -1,0 +1,20 @@
+/*
+ * Using this plugin with custom paths:
+ *  - apply it,
+ *  - set `sourceDir` to the location of your sass sources,
+ *  - set `destPath` to the desired destination path relative to the war root,
+ *  - apply the war plugin.
+ *
+ * In this configuration, the `style.scss` file gets compiled to a `style.css`
+ * and a `style.css.map` files under the war’s `styles` directory.
+ */
+
+plugins {
+  id 'war'
+  id 'io.miret.etienne.sass' version '1.2.0'
+}
+
+compileSass {
+  sourceDir = project.file ("${projectDir}/src/main/styles")
+  destPath = "styles"
+}
