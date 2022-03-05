@@ -27,7 +27,7 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 
     functionalTestImplementation 'com.github.tomakehurst:wiremock-jre8:2.32.0'
-    functionalTestImplementation 'org.apache.commons:commons-compress:1.19'
+    functionalTestImplementation 'org.apache.commons:commons-compress:1.21'
 }
 
 test {
