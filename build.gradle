@@ -19,8 +19,8 @@ configurations {
 
 dependencies {
     implementation 'de.undercouch:gradle-download-task:5.0.1'
-    compileOnly 'org.projectlombok:lombok:1.18.10'
-    annotationProcessor 'org.projectlombok:lombok:1.18.10'
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     testImplementation 'org.assertj:assertj-core:3.14.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
