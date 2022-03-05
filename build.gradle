@@ -1,10 +1,10 @@
 plugins {
     id 'java-gradle-plugin'
-    id 'com.gradle.plugin-publish' version '0.15.0'
+    id 'com.gradle.plugin-publish' version '0.20.0'
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 def javaVersion = JavaVersion.VERSION_1_8
@@ -18,16 +18,16 @@ configurations {
 }
 
 dependencies {
-    implementation 'de.undercouch:gradle-download-task:4.0.2'
-    compileOnly 'org.projectlombok:lombok:1.18.10'
-    annotationProcessor 'org.projectlombok:lombok:1.18.10'
+    implementation 'de.undercouch:gradle-download-task:5.0.1'
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
-    testImplementation 'org.assertj:assertj-core:3.14.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
+    testImplementation 'org.assertj:assertj-core:3.22.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 
-    functionalTestImplementation 'com.github.tomakehurst:wiremock-jre8:2.25.1'
-    functionalTestImplementation 'org.apache.commons:commons-compress:1.19'
+    functionalTestImplementation 'com.github.tomakehurst:wiremock-jre8:2.32.0'
+    functionalTestImplementation 'org.apache.commons:commons-compress:1.21'
 }
 
 test {
