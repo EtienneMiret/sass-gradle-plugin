@@ -18,7 +18,7 @@ configurations {
 }
 
 dependencies {
-    implementation 'de.undercouch:gradle-download-task:4.0.2'
+    implementation 'de.undercouch:gradle-download-task:5.0.1'
     compileOnly 'org.projectlombok:lombok:1.18.10'
     annotationProcessor 'org.projectlombok:lombok:1.18.10'
 
