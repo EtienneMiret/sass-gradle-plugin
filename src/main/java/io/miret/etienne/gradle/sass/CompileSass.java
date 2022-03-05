@@ -47,6 +47,10 @@ public class CompileSass extends DefaultTask {
 
   @Setter
   @Getter (onMethod_ = {@Input})
+  private String destPath = ".";
+
+  @Setter
+  @Getter (onMethod_ = {@Input})
   private Style style = Style.expanded;
 
   @Getter (onMethod_ = {@Input})
@@ -156,7 +160,7 @@ public class CompileSass extends DefaultTask {
     workQueue.submit(CompileSassWorkAction.class, compileSassWorkParameters -> {
       compileSassWorkParameters.getExecutable ().set (executable);
       compileSassWorkParameters.getLoadPaths ().setFrom (loadPaths);
-      compileSassWorkParameters.getOutputDir ().set (outputDir);
+      compileSassWorkParameters.getOutputDir ().set (new File (outputDir, destPath));
       compileSassWorkParameters.getSourceDir ().set (sourceDir);
       compileSassWorkParameters.getStyle ().set (style);
       compileSassWorkParameters.getSourceMap ().set (sourceMap);
