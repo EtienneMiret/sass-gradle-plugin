@@ -33,6 +33,9 @@ sass {
 
   // Base URL where to download dart-sass from:
   baseUrl = 'https://github.com/sass/dart-sass/releases/download'
+  
+  // Disable automagic copying to war (default is enabled):
+  noAutoCopy ()
 }
 ```
 
