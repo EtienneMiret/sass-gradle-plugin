@@ -115,6 +115,33 @@ class SassGradlePlugin_withWar_FunctionalTest {
     }
   }
 
+  @Test
+  void should_not_copy_css_to_war () throws Exception {
+    try (InputStream input = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("war-no-auto-copy.gradle")) {
+      Files.copy (input, projectDir.resolve ("build.gradle"));
+    }
+
+    GradleRunner runner = GradleRunner.create ();
+    runner.withPluginClasspath ();
+    runner.withEnvironment (singletonMap ("URL", server.baseUrl ()));
+    runner.withArguments ("assemble");
+    runner.withProjectDir (projectDir.toFile ());
+    runner.build ();
+
+    try (
+        InputStream input = Files.newInputStream (projectDir.resolve ("build/libs/cool-webapp-1.0.0.war"));
+        ZipInputStream zip = new ZipInputStream (input)
+    ) {
+      List<ZipEntry> entries = new ArrayList<> ();
+      for (ZipEntry entry = zip.getNextEntry (); entry != null; entry = zip.getNextEntry ()) {
+        entries.add (entry);
+      }
+      assertThat (entries)
+          .extracting (ZipEntry::getName)
+          .doesNotContain ("style.css");
+    }
+  }
+
   private byte[] createArchive () throws IOException {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream ();
     if (Os.isFamily (Os.FAMILY_WINDOWS)) {
