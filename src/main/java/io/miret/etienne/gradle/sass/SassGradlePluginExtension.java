@@ -16,6 +16,8 @@ public class SassGradlePluginExtension {
 
   private String baseUrl;
 
+  private boolean autoCopy;
+
   public SassGradlePluginExtension (Project project) {
     this.version = "1.49.9";
     this.directory = project.getRootDir ()
@@ -23,6 +25,11 @@ public class SassGradlePluginExtension {
         .resolve (".gradle/sass")
         .toFile ();
     this.baseUrl = "https://github.com/sass/dart-sass/releases/download";
+    this.autoCopy = true;
+  }
+
+  public void noAutoCopy () {
+    this.autoCopy = false;
   }
 
 }
