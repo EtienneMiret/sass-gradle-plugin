@@ -10,5 +10,5 @@
 
 plugins {
   id 'war'
-  id 'io.miret.etienne.sass' version '1.2.0'
+  id 'io.miret.etienne.sass' version '1.3.0'
 }
