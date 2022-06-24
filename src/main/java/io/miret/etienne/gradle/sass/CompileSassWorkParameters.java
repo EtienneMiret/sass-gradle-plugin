@@ -19,4 +19,5 @@ public interface CompileSassWorkParameters extends WorkParameters {
   Property<Boolean> getWatch();
   Property<Boolean> getCharset();
   Property<Boolean> getErrorCss();
+  Property<Boolean> getQuiet();
 }

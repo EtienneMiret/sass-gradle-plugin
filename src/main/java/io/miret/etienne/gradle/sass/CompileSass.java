@@ -62,6 +62,9 @@ public class CompileSass extends DefaultTask {
   @Getter (onMethod_ = {@Input})
   private boolean errorCss = true;
 
+  @Getter (onMethod_ = {@Input})
+  private boolean quiet = false;
+
   @Setter
   @Getter (onMethod_ = {@Input})
   private SourceMap sourceMap = SourceMap.file;
@@ -109,6 +112,10 @@ public class CompileSass extends DefaultTask {
 
   public void watch () {
     watch = true;
+  }
+
+  public void quiet () {
+    quiet = true;
   }
 
   @Internal
@@ -168,6 +175,7 @@ public class CompileSass extends DefaultTask {
       compileSassWorkParameters.getWatch ().set (watch);
       compileSassWorkParameters.getCharset ().set (charset);
       compileSassWorkParameters.getErrorCss ().set (errorCss);
+      compileSassWorkParameters.getQuiet ().set (quiet);
     });
   }
 
