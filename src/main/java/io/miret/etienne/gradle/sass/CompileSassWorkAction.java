@@ -38,6 +38,9 @@ public abstract class CompileSassWorkAction implements WorkAction<CompileSassWor
       if (!parameters.getErrorCss().get()) {
         args.add ("--no-error-css");
       }
+      if (parameters.getQuiet().get()) {
+        args.add ("--quiet");
+      }
       CompileSass.SourceMap sourceMap = parameters.getSourceMap().get();
       switch (sourceMap) {
         case none:

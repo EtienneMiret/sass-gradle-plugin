@@ -290,6 +290,22 @@ class SassGradlePluginFunctionalTest {
     ));
   }
 
+  @Test
+  void should_be_quiet () throws IOException {
+    Path out = createExecutable();
+
+    GradleRunner.create ()
+        .withPluginClasspath ()
+        .withArguments ("quiet")
+        .withProjectDir (projectDir.toFile ())
+        .build();
+
+    assertThat (out).hasContent (String.format (
+        "sass --style=expanded --quiet --source-map-urls=relative %1$s/src/main/sass:%1$s/build/sass",
+        projectDir.toRealPath ()
+    ));
+  }
+
   private Path createExecutable () throws IOException {
     Path out = projectDir.resolve ("build/out");
     Path sassDir = projectDir.resolve (".gradle/sass/some.specific.version/dart-sass");
