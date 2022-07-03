@@ -74,7 +74,14 @@ public class SassGradlePlugin implements Plugin<Project> {
   }
 
   private String buildArchitecture () {
-    return System.getProperty ("os.arch").contains ("64") ? "x64" : "ia32";
+    String arch = System.getProperty("os.arch");
+    if (arch.contains("arm") || arch.contains("aarch64")) {
+      return "arm64";
+    } else if (arch.contains("64")) {
+      return "x64";
+    } else {
+      return "ia32";
+    }
   }
 
   private String archiveExtension () {
