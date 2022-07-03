@@ -11,7 +11,7 @@
 
 plugins {
   id 'war'
-  id 'io.miret.etienne.sass' version '1.3.0'
+  id 'io.miret.etienne.sass' version '1.4.0'
 }
 
 compileSass {
