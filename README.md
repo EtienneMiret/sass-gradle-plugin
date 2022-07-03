@@ -71,6 +71,10 @@ compileSass {
   // (Default is to not to watch, compile once and terminate)
   watch ()
 
+  // Prevent sass to emit warnings
+  // (Default is to emit them)
+  quiet ()
+
   // Source map style:
   //  - file: output source map in a separate file (default)
   //  - embed: embed source map in CSS
