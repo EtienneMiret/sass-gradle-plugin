@@ -24,6 +24,10 @@ task watch (type: CompileSass) {
   watch ()
 }
 
+task quiet (type: CompileSass) {
+  quiet ()
+}
+
 task compileNoCharset (type: CompileSass) {
   noCharset ()
 }
