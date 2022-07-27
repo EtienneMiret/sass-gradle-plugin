@@ -19,7 +19,7 @@ public class SassGradlePluginExtension {
   private boolean autoCopy;
 
   public SassGradlePluginExtension (Project project) {
-    this.version = "1.49.9";
+    this.version = "1.54.0";
     this.directory = project.getRootDir ()
         .toPath ()
         .resolve (".gradle/sass")
