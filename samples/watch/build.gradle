@@ -9,7 +9,7 @@ import io.miret.etienne.gradle.sass.CompileSass
 
 plugins {
   id 'war'
-  id 'io.miret.etienne.sass' version '1.4.0'
+  id 'io.miret.etienne.sass' version '1.4.1'
 }
 
 /*
