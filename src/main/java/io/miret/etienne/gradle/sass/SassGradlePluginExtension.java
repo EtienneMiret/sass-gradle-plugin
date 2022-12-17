@@ -20,7 +20,7 @@ public class SassGradlePluginExtension {
 
   public SassGradlePluginExtension (Project project) {
     this.version = "1.54.0";
-    this.directory = project.getRootDir ()
+    this.directory = project.getProjectDir ()
         .toPath ()
         .resolve (".gradle/sass")
         .toFile ();

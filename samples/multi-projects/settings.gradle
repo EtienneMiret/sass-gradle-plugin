@@ -1,0 +1,7 @@
+pluginManagement {
+  includeBuild '../..'
+}
+
+rootProject.name = 'multi-project'
+include 'subproject-a'
+include 'subproject-b'
