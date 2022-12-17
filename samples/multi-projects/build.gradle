@@ -1,0 +1,3 @@
+plugins {
+  id 'io.miret.etienne.sass' version '1.4.1' apply false
+}

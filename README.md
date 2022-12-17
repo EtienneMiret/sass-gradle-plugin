@@ -113,6 +113,11 @@ Furthermore, the output will probably need to be consumed by that other task.
 See [samples/jar](samples/jar/build.gradle) for an example with the `java`
 plugin and its `jar` task.
 
+### In a multi-projects build
+
+You can apply this plugin to several subprojects of a multi-projects build.
+See [samples/multi-projects](samples/multi-projects/build.gradle).
+
 ### Watching for changes
 
 The `watch ()` option prevents the `compileSass` task to terminates.
