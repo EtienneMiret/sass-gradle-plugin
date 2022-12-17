@@ -1,3 +1,15 @@
+/*
+ * In case several subprojects need this plugin, it is recommended to apply and
+ * configure it on the root project. For one, it allows you to share
+ * the sass version (among other configuration). For another, it will save
+ * disk space as dart-sass will be installed once per project where this plugin
+ * is applied.
+ */
 plugins {
-  id 'io.miret.etienne.sass' version '1.4.2' apply false
+  id 'io.miret.etienne.sass' version '1.4.2'
+}
+
+sass {
+  version = "1.54.4"
+  // Your customization here
 }

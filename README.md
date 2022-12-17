@@ -115,7 +115,10 @@ plugin and its `jar` task.
 
 ### In a multi-projects build
 
-You can apply this plugin to several subprojects of a multi-projects build.
+You can apply this plugin to a multi-projects build.
+If only one subproject need it, just apply it to said subproject.
+Otherwise, apply it to the root project,
+or to a common ancestor of all subprojects that need it.
 See [samples/multi-projects](samples/multi-projects/build.gradle).
 
 ### Watching for changes
