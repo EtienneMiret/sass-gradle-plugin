@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.*;
 import org.gradle.workers.WorkQueue;
@@ -86,16 +87,29 @@ public class CompileSass extends DefaultTask {
   @InputFile
   public File getExecutable () {
     String command = Os.isFamily (Os.FAMILY_WINDOWS) ? "sass.bat" : "sass";
-    SassGradlePluginExtension sassExtension = getProject ()
-        .getExtensions ()
-        .findByType (SassGradlePluginExtension.class);
-    assert sassExtension != null;
+    SassGradlePluginExtension sassExtension = findExtension();
     return sassExtension.getDirectory ()
         .toPath ()
         .resolve (sassExtension.getVersion ())
         .resolve ("dart-sass")
         .resolve (command)
         .toFile ();
+  }
+
+  private SassGradlePluginExtension findExtension() {
+    Project project = getProject();
+    SassGradlePluginExtension extension = null;
+    while (extension == null && project != null) {
+      extension = project.getExtensions()
+          .findByType(SassGradlePluginExtension.class);
+      project = project.getParent();
+    }
+    if (extension == null) {
+      throw new IllegalStateException(
+          "SassGradlePluginExtension wasn't registered in any parent project."
+      );
+    }
+    return extension;
   }
 
   public void loadPath (File loadPath) {
