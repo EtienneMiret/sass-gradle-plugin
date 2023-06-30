@@ -83,10 +83,6 @@ public class MultiProjectTest {
 
   @BeforeEach
   void setupProject() throws IOException {
-    List<String> directories = ImmutableList.of(
-        "app",
-        "lib"
-    );
     List<String> files = ImmutableList.of(
         "app/build.gradle",
         "lib/build.gradle",
@@ -94,15 +90,7 @@ public class MultiProjectTest {
         "settings.gradle"
     );
 
-    for (String subDir : directories) {
-      Files.createDirectories(projectDir.resolve(subDir));
-    }
-    for (String resource : files) {
-      try (InputStream input = MultiProjectTest.class.getResourceAsStream("multi-project/" + resource)) {
-        requireNonNull(input, "Missing resource: " + resource);
-        Files.copy(input, projectDir.resolve(resource));
-      }
-    }
+    Utils.copy("/io/miret/etienne/gradle/sass/multi-project", files, projectDir);
   }
 
   @Test
