@@ -306,6 +306,17 @@ class SassGradlePluginFunctionalTest {
     ));
   }
 
+  @Test
+  void should_support_Gradle_configuration_cache() throws IOException {
+    createExecutable();
+
+    GradleRunner.create()
+        .withPluginClasspath()
+        .withArguments("--configuration-cache", "compileCustomSass")
+        .withProjectDir(projectDir.toFile())
+        .build();
+  }
+
   private Path createExecutable () throws IOException {
     Path out = projectDir.resolve ("build/out");
     Path sassDir = projectDir.resolve (".gradle/sass/some.specific.version/dart-sass");

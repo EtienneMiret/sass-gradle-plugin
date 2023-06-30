@@ -21,6 +21,10 @@ public class CompileSass extends DefaultTask {
 
   private final WorkerExecutor workerExecutor;
 
+  private final FileCollection inputFiles;
+
+  private final File sassExecutable;
+
   enum Style {
     expanded,
     compressed
@@ -77,24 +81,12 @@ public class CompileSass extends DefaultTask {
 
   @InputFiles
   public FileCollection getInputFiles () {
-    return getProject ().files (
-        getProject ().fileTree (sourceDir),
-        loadPaths.stream ()
-          .map (getProject ()::fileTree)
-          .collect (toList ())
-    );
+    return inputFiles;
   }
 
   @InputFile
   public File getExecutable () {
-    String command = Os.isFamily (Os.FAMILY_WINDOWS) ? "sass.bat" : "sass";
-    SassGradlePluginExtension sassExtension = findExtension();
-    return sassExtension.getDirectory ()
-        .toPath ()
-        .resolve (sassExtension.getVersion ())
-        .resolve ("dart-sass")
-        .resolve (command)
-        .toFile ();
+    return sassExecutable;
   }
 
   private SassGradlePluginExtension findExtension() {
@@ -172,15 +164,29 @@ public class CompileSass extends DefaultTask {
   public CompileSass (WorkerExecutor workerExecutor) {
     super();
     this.workerExecutor = workerExecutor;
+
+    inputFiles = getProject ().files (
+        getProject ().fileTree (sourceDir),
+        loadPaths.stream ()
+            .map (getProject ()::fileTree)
+            .collect (toList ())
+    );
+
+    String command = Os.isFamily (Os.FAMILY_WINDOWS) ? "sass.bat" : "sass";
+    SassGradlePluginExtension sassExtension = findExtension();
+    sassExecutable = sassExtension.getDirectory ()
+        .toPath ()
+        .resolve (sassExtension.getVersion ())
+        .resolve ("dart-sass")
+        .resolve (command)
+        .toFile ();
   }
 
   @TaskAction
   public void compileSass () {
-    File executable = getExecutable ();
-
     WorkQueue workQueue = workerExecutor.noIsolation();
     workQueue.submit(CompileSassWorkAction.class, compileSassWorkParameters -> {
-      compileSassWorkParameters.getExecutable ().set (executable);
+      compileSassWorkParameters.getExecutable ().set (sassExecutable);
       compileSassWorkParameters.getLoadPaths ().setFrom (loadPaths);
       compileSassWorkParameters.getOutputDir ().set (new File (outputDir, destPath));
       compileSassWorkParameters.getSourceDir ().set (sourceDir);
