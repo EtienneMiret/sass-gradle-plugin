@@ -42,6 +42,7 @@ public class CompileSass extends DefaultTask {
   private File outputDir = new File (getProject ().getBuildDir (), "sass");
 
   @Setter
+  @Getter (onMethod_ = {@InputDirectory})
   private File sourceDir = new File (getProject ().getProjectDir (), "src/main/sass");
 
   private List<File> loadPaths = new ArrayList<> ();

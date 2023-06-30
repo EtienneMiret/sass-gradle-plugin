@@ -85,7 +85,9 @@ public class MultiProjectTest {
   void setupProject() throws IOException {
     List<String> files = ImmutableList.of(
         "app/build.gradle",
+        "app/src/main/sass/foo.scss",
         "lib/build.gradle",
+        "lib/src/main/sass/bar.scss",
         "build.gradle",
         "settings.gradle"
     );

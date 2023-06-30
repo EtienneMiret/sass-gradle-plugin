@@ -2,4 +2,4 @@ pluginManagement {
   includeBuild '../..'
 }
 
-rootProject.name = 'custom-paths-sample'
+rootProject.name = 'custom-paths-example'
