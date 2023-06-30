@@ -1,0 +1,13 @@
+p {
+  text-align: justify;
+  text-indent: 4em;
+}
+
+a {
+  color: blue;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
