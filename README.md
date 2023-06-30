@@ -113,6 +113,12 @@ Furthermore, the output will probably need to be consumed by that other task.
 See [examples/jar](examples/jar/build.gradle) for an example with the `java`
 plugin and its `jar` task.
 
+### Using the Gradle Kotlin DSL
+
+When writing the build script in Kotlin instead of Groovy,
+the syntax is different.
+See [examples/kotlin](examples/kotlin/build.gradle.kts).
+
 ### In a multi-projects build
 
 You can apply this plugin to a multi-projects build.
