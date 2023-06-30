@@ -1,5 +1,0 @@
-pluginManagement {
-  includeBuild '../..'
-}
-
-rootProject.name = 'simple-sample'

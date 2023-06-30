@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.*;
 import org.gradle.workers.WorkQueue;
@@ -19,6 +20,10 @@ import static java.util.stream.Collectors.toList;
 public class CompileSass extends DefaultTask {
 
   private final WorkerExecutor workerExecutor;
+
+  private final FileCollection inputFiles;
+
+  private final File sassExecutable;
 
   enum Style {
     expanded,
@@ -41,6 +46,7 @@ public class CompileSass extends DefaultTask {
   private File outputDir = new File (getProject ().getBuildDir (), "sass");
 
   @Setter
+  @Getter (onMethod_ = {@InputDirectory})
   private File sourceDir = new File (getProject ().getProjectDir (), "src/main/sass");
 
   private List<File> loadPaths = new ArrayList<> ();
@@ -75,27 +81,28 @@ public class CompileSass extends DefaultTask {
 
   @InputFiles
   public FileCollection getInputFiles () {
-    return getProject ().files (
-        getProject ().fileTree (sourceDir),
-        loadPaths.stream ()
-          .map (getProject ()::fileTree)
-          .collect (toList ())
-    );
+    return inputFiles;
   }
 
   @InputFile
   public File getExecutable () {
-    String command = Os.isFamily (Os.FAMILY_WINDOWS) ? "sass.bat" : "sass";
-    SassGradlePluginExtension sassExtension = getProject ()
-        .getExtensions ()
-        .findByType (SassGradlePluginExtension.class);
-    assert sassExtension != null;
-    return sassExtension.getDirectory ()
-        .toPath ()
-        .resolve (sassExtension.getVersion ())
-        .resolve ("dart-sass")
-        .resolve (command)
-        .toFile ();
+    return sassExecutable;
+  }
+
+  private SassGradlePluginExtension findExtension() {
+    Project project = getProject();
+    SassGradlePluginExtension extension = null;
+    while (extension == null && project != null) {
+      extension = project.getExtensions()
+          .findByType(SassGradlePluginExtension.class);
+      project = project.getParent();
+    }
+    if (extension == null) {
+      throw new IllegalStateException(
+          "SassGradlePluginExtension wasn't registered in any parent project."
+      );
+    }
+    return extension;
   }
 
   public void loadPath (File loadPath) {
@@ -157,15 +164,29 @@ public class CompileSass extends DefaultTask {
   public CompileSass (WorkerExecutor workerExecutor) {
     super();
     this.workerExecutor = workerExecutor;
+
+    inputFiles = getProject ().files (
+        getProject ().fileTree (sourceDir),
+        loadPaths.stream ()
+            .map (getProject ()::fileTree)
+            .collect (toList ())
+    );
+
+    String command = Os.isFamily (Os.FAMILY_WINDOWS) ? "sass.bat" : "sass";
+    SassGradlePluginExtension sassExtension = findExtension();
+    sassExecutable = sassExtension.getDirectory ()
+        .toPath ()
+        .resolve (sassExtension.getVersion ())
+        .resolve ("dart-sass")
+        .resolve (command)
+        .toFile ();
   }
 
   @TaskAction
   public void compileSass () {
-    File executable = getExecutable ();
-
     WorkQueue workQueue = workerExecutor.noIsolation();
     workQueue.submit(CompileSassWorkAction.class, compileSassWorkParameters -> {
-      compileSassWorkParameters.getExecutable ().set (executable);
+      compileSassWorkParameters.getExecutable ().set (sassExecutable);
       compileSassWorkParameters.getLoadPaths ().setFrom (loadPaths);
       compileSassWorkParameters.getOutputDir ().set (new File (outputDir, destPath));
       compileSassWorkParameters.getSourceDir ().set (sourceDir);

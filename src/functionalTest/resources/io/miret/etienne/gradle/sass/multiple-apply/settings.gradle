@@ -1,0 +1,4 @@
+rootProject.name = 'test-multiple-apply'
+include 'a'
+include 'b'
+include 'c'

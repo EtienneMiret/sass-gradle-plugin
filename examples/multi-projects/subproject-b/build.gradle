@@ -1,0 +1,8 @@
+/* Don't reapply this plugin on subprojects if already done in root project. */
+plugins {
+  id 'war'
+}
+
+compileSass {
+  // Configuration for this subproject "compileSass" task.
+}

@@ -43,6 +43,14 @@ public class SassGradlePlugin implements Plugin<Project> {
           task.from (downloadedFiles);
           task.into (new File (extension.getDirectory (), extension.getVersion ()));
         });
+    compileSass(project, extension, installSass);
+  }
+
+  private void compileSass(
+      Project project,
+      SassGradlePluginExtension extension,
+      TaskProvider<?> installSass
+  ) {
     TaskProvider<CompileSass> compileSass = project.getTasks ()
         .register ("compileSass", CompileSass.class, task -> {
           task.setDescription ("Compile sass and scss.");
@@ -56,6 +64,9 @@ public class SassGradlePlugin implements Plugin<Project> {
             task.from (compileSass.map (CompileSass::getOutputDir));
           }
         });
+    project.getSubprojects().forEach(
+        subProject -> compileSass(subProject, extension, installSass)
+    );
   }
 
   private String archiveName (String version) {

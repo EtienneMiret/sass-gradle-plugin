@@ -1,0 +1,21 @@
+name: Test
+on: push
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Gradle check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git clone
+        uses: actions/checkout@v3
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version-file: .java-version
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+      - name: Check
+        run: ./gradlew check

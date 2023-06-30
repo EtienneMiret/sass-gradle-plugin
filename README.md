@@ -86,19 +86,19 @@ compileSass {
 }
 ```
 
-## Samples
+## Examples
 
 ### Simple
 
 The easiest way to use this plugin is to apply it, along with the war
 plugin, and put your sass files under `src/main/sass`.
-See [samples/simple](samples/simple/build.gradle).
+See [examples/simple](examples/simple/build.gradle).
 
 ### With custom paths
 
-You can customize the path where to pickup the SASS sources (`sourceDir`)
+You can customize the path where to pick up the SASS sources (`sourceDir`)
 as well as the path inside the war where to put the generated CSS (`destPath`).
-See [samples/custom-paths](samples/custom-paths/build.gradle).
+See [examples/custom-paths](examples/custom-paths/build.gradle).
 
 Note that the `outputDir` is an intermediate folder where the CSS is output
 before being copied to the war. There should be no need to customize it.
@@ -110,20 +110,29 @@ you need to explicitly call the `compileSass` task.
 Usually, this is done by making another task depend on it.
 
 Furthermore, the output will probably need to be consumed by that other task.
-See [samples/jar](samples/jar/build.gradle) for an example with the `java`
+See [examples/jar](examples/jar/build.gradle) for an example with the `java`
 plugin and its `jar` task.
+
+### Using the Gradle Kotlin DSL
+
+When writing the build script in Kotlin instead of Groovy,
+the syntax is different.
+See [examples/kotlin](examples/kotlin/build.gradle.kts).
 
 ### In a multi-projects build
 
-You can apply this plugin to several subprojects of a multi-projects build.
-See [samples/multi-projects](samples/multi-projects/build.gradle).
+You can apply this plugin to a multi-projects build.
+If only one subproject need it, just apply it to said subproject.
+Otherwise, apply it to the root project,
+or to a common ancestor of all subprojects that need it.
+See [examples/multi-projects](examples/multi-projects/build.gradle).
 
 ### Watching for changes
 
 The `watch ()` option prevents the `compileSass` task to terminates.
 It is therefore better used on a copy of this task that isn’t a dependency
 of the `assemble` task.
-See [samples/watch](samples/watch/build.gradle).
+See [examples/watch](examples/watch/build.gradle).
 
 [1]: https://gradle.org/ 
 [2]: https://sass-lang.com/dart-sass

@@ -1,4 +1,0 @@
-plugins {
-  id 'war'
-  id 'io.miret.etienne.sass'
-}
