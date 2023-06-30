@@ -1,5 +1,11 @@
 package io.miret.etienne.gradle.sass;
 
+import com.google.common.io.ByteStreams;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.tools.ant.taskdefs.condition.Os;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -7,6 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class Utils {
 
@@ -45,6 +54,40 @@ public class Utils {
         Files.copy(input, target);
       }
     }
+  }
+
+  /**
+   * Creates an archive with the dummy sass executable from classpath.
+   * On Windows, this is a ZIP archive with {@code sass.bat}.
+   * Elsewhere, this is a gzipped, tar archive with {@code sass.sh}.
+   */
+  public static byte[] createArchive() throws IOException {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream ();
+    if (Os.isFamily (Os.FAMILY_WINDOWS)) {
+      try (
+          ZipOutputStream zip = new ZipOutputStream (bytes);
+          InputStream sass = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("sass.bat")
+      ) {
+        assert sass != null;
+        zip.putNextEntry (new ZipEntry("dart-sass/sass.bat"));
+        ByteStreams.copy (sass, zip);
+      }
+    } else {
+      try (
+          GZIPOutputStream gz = new GZIPOutputStream (bytes);
+          TarArchiveOutputStream tgz = new TarArchiveOutputStream (gz);
+          InputStream sass = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("sass.sh")
+      ) {
+        assert sass != null;
+        TarArchiveEntry entry = new TarArchiveEntry ("dart-sass/sass");
+        entry.setSize (sass.available ());
+        entry.setMode (0755);
+        tgz.putArchiveEntry (entry);
+        ByteStreams.copy (sass, tgz);
+        tgz.closeArchiveEntry ();
+      }
+    }
+    return bytes.toByteArray ();
   }
 
 }
