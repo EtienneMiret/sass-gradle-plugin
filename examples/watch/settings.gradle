@@ -2,4 +2,4 @@ pluginManagement {
   includeBuild '../..'
 }
 
-rootProject.name = 'watch-sample'
+rootProject.name = 'watch-example'

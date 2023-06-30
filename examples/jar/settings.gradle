@@ -2,4 +2,4 @@ pluginManagement {
   includeBuild '../..'
 }
 
-rootProject.name = 'jar-sample'
+rootProject.name = 'jar-example'

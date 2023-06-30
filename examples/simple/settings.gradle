@@ -2,4 +2,4 @@ pluginManagement {
   includeBuild '../..'
 }
 
-rootProject.name = 'simple-sample'
+rootProject.name = 'simple-example'
