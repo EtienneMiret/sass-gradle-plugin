@@ -96,7 +96,7 @@ See [samples/simple](samples/simple/build.gradle).
 
 ### With custom paths
 
-You can customize the path where to pickup the SASS sources (`sourceDir`)
+You can customize the path where to pick up the SASS sources (`sourceDir`)
 as well as the path inside the war where to put the generated CSS (`destPath`).
 See [samples/custom-paths](samples/custom-paths/build.gradle).
 
