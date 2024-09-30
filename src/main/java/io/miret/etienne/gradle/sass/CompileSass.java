@@ -25,18 +25,18 @@ public class CompileSass extends DefaultTask {
 
   private final File sassExecutable;
 
-  enum Style {
+  public enum Style {
     expanded,
     compressed
   }
 
-  enum SourceMap {
+  public enum SourceMap {
     none,
     embed,
     file
   }
 
-  enum SourceMapUrls {
+  public enum SourceMapUrls {
     relative,
     absolute
   }
