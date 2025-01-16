@@ -6,7 +6,7 @@
 
 plugins {
     "war"
-    id("io.miret.etienne.sass") version "1.5.1"
+    id("io.miret.etienne.sass") version "1.5.2"
 }
 
 sass {
