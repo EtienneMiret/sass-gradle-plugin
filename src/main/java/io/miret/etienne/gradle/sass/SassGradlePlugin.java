@@ -31,6 +31,8 @@ public class SassGradlePlugin implements Plugin<Project> {
           task.dest (archive);
           task.tempAndMove (true);
           task.overwrite (false);
+          task.onlyIf (t -> !((Download)t).getDest().exists());
+          task.getOutputs().cacheIf (spec -> true);
         });
     TaskProvider<Copy> installSass = project.getTasks ()
         .register ("installSass", Copy.class, task -> {
@@ -42,6 +44,7 @@ public class SassGradlePlugin implements Plugin<Project> {
           task.dependsOn (downloadSass);
           task.from (downloadedFiles);
           task.into (new File (extension.getDirectory (), extension.getVersion ()));
+          task.getOutputs().cacheIf (spec -> true);
         });
     compileSass(project, extension, installSass);
   }
