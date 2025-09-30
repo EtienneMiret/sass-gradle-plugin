@@ -19,29 +19,32 @@ public class SassGradlePlugin implements Plugin<Project> {
         .create ("sass", SassGradlePluginExtension.class, project);
 
     TaskProvider<Download> downloadSass = project.getTasks ()
-        .register ("downloadSass", Download.class, task -> {
+        .register ("downloadSass", Download.class, downloadTask -> {
           String archiveName = archiveName (extension.getVersion ());
           File archive = extension.getDirectory ()
               .toPath ()
               .resolve ("archive")
               .resolve (archiveName)
               .toFile ();
-          task.setDescription ("Download a sass archive.");
-          task.src (String.format ("%s/%s/%s", extension.getBaseUrl (), extension.getVersion (), archiveName));
-          task.dest (archive);
-          task.tempAndMove (true);
-          task.overwrite (false);
+          downloadTask.setDescription ("Download a sass archive.");
+          downloadTask.src (String.format ("%s/%s/%s", extension.getBaseUrl (), extension.getVersion (), archiveName));
+          downloadTask.dest (archive);
+          downloadTask.tempAndMove (true);
+          downloadTask.overwrite (false);
+          downloadTask.onlyIf (t -> !((Download)t).getDest().exists());
+          downloadTask.getOutputs().cacheIf (spec -> true);
         });
     TaskProvider<Copy> installSass = project.getTasks ()
-        .register ("installSass", Copy.class, task -> {
+        .register ("installSass", Copy.class, installTask -> {
           Provider<FileTree> downloadedFiles = downloadSass.map (Download::getDest)
               .map (archive -> Os.isFamily (Os.FAMILY_WINDOWS)
                   ? project.zipTree (archive)
                   : project.tarTree (archive));
-          task.setDescription ("Unpack and install a sass archive.");
-          task.dependsOn (downloadSass);
-          task.from (downloadedFiles);
-          task.into (new File (extension.getDirectory (), extension.getVersion ()));
+          installTask.setDescription ("Unpack and install a sass archive.");
+          installTask.dependsOn (downloadSass);
+          installTask.from (downloadedFiles);
+          installTask.into (new File (extension.getDirectory (), extension.getVersion ()));
+          installTask.getOutputs().cacheIf (spec -> true);
         });
     compileSass(project, extension, installSass);
   }
