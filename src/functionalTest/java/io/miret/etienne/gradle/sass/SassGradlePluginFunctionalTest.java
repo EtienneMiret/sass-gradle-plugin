@@ -127,6 +127,24 @@ class SassGradlePluginFunctionalTest {
   }
 
   @Test
+  void should_rerun_on_loadPath_change () throws IOException {
+    GradleRunner.create ()
+        .withPluginClasspath ()
+        .withArguments ("compileWithLoadPath")
+        .withProjectDir (projectDir.toFile ())
+        .build ();
+    Files.createDirectories (projectDir.resolve ("sass-lib"));
+    Files.createFile (projectDir.resolve ("sass-lib/foo.scss"));
+    GradleRunner.create()
+        .withPluginClasspath()
+        .withArguments("compileWithLoadPath")
+        .withProjectDir(projectDir.toFile())
+        .build();
+
+    assertThat(commandHistory()).content().hasLineCount(2);
+  }
+
+  @Test
   void should_use_compressed_style () throws IOException {
     GradleRunner.create ()
         .withPluginClasspath ()
