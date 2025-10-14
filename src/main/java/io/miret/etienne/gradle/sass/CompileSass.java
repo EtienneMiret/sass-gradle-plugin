@@ -21,8 +21,6 @@ public class CompileSass extends DefaultTask {
 
   private final WorkerExecutor workerExecutor;
 
-  private final FileCollection inputFiles;
-
   private final File sassExecutable;
 
   public enum Style {
@@ -81,7 +79,12 @@ public class CompileSass extends DefaultTask {
 
   @InputFiles
   public FileCollection getInputFiles () {
-    return inputFiles;
+    return getProject().files(
+        getProject().fileTree(sourceDir),
+        loadPaths.stream()
+            .map(getProject()::fileTree)
+            .collect(toList())
+    );
   }
 
   @InputFile
@@ -164,13 +167,6 @@ public class CompileSass extends DefaultTask {
   public CompileSass (WorkerExecutor workerExecutor) {
     super();
     this.workerExecutor = workerExecutor;
-
-    inputFiles = getProject ().files (
-        getProject ().fileTree (sourceDir),
-        loadPaths.stream ()
-            .map (getProject ()::fileTree)
-            .collect (toList ())
-    );
 
     String command = Os.isFamily (Os.FAMILY_WINDOWS) ? "sass.bat" : "sass";
     SassGradlePluginExtension sassExtension = findExtension();
