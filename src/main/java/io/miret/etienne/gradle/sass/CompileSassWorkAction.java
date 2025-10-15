@@ -55,7 +55,9 @@ public abstract class CompileSassWorkAction implements WorkAction<CompileSassWor
       if (sourceMap != CompileSass.SourceMap.none) {
         args.add (String.format ("--source-map-urls=%s", parameters.getSourceMapUrls().get()));
       }
-      args.add (String.format ("%s:%s", parameters.getSourceDir().get(), parameters.getOutputDir().get()));
+      parameters.getEntryPoints().get().forEach((from, to) -> {
+        args.add (String.format ("%s:%s", from, to));
+      });
       execSpec.args (args);
     });
   }

@@ -13,10 +13,14 @@ import org.gradle.workers.WorkerExecutor;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @CacheableTask
 public class CompileSass extends DefaultTask {
@@ -25,6 +29,7 @@ public class CompileSass extends DefaultTask {
 
   private final File sassExecutable;
 
+  @Getter (onMethod_ = @Input)
   private final List<Pair<String, String>> entryPoints = new ArrayList<>();
 
   public enum Style {
@@ -126,6 +131,31 @@ public class CompileSass extends DefaultTask {
     entryPoints.add(entryPoint);
   }
 
+  private Map<File, File> fileEntryPoints() {
+    Path source = sourceDir.toPath();
+    Path output = outputDir.toPath().resolve(destPath);
+    if (entryPoints.isEmpty()) {
+      return Collections.singletonMap(
+          source.toAbsolutePath().normalize().toFile(),
+          output.toAbsolutePath().normalize().toFile()
+      );
+    }
+    return entryPoints.stream()
+        .map(pair -> {
+          Path from = source.resolve(pair.component1());
+          Path to = output.resolve(pair.component2());
+          return new Pair<>(
+              from.toAbsolutePath().normalize().toFile(),
+              to.toAbsolutePath().normalize().toFile());
+        })
+        .collect(toMap(Pair::component1, Pair::component2, (a, b) -> {
+          if (a.equals(b)) {
+            return a;
+          }
+          throw new IllegalStateException("Two different outputs for the same input: " + a + " and " + b + ".");
+        }));
+  }
+
   public void noCharset () {
     charset = false;
   }
@@ -198,8 +228,7 @@ public class CompileSass extends DefaultTask {
     workQueue.submit(CompileSassWorkAction.class, compileSassWorkParameters -> {
       compileSassWorkParameters.getExecutable ().set (sassExecutable);
       compileSassWorkParameters.getLoadPaths ().setFrom (loadPaths);
-      compileSassWorkParameters.getOutputDir ().set (new File (outputDir, destPath));
-      compileSassWorkParameters.getSourceDir ().set (sourceDir);
+      compileSassWorkParameters.getEntryPoints().set(fileEntryPoints());
       compileSassWorkParameters.getStyle ().set (style);
       compileSassWorkParameters.getSourceMap ().set (sourceMap);
       compileSassWorkParameters.getSourceMapUrls ().set (sourceMapUrls);
