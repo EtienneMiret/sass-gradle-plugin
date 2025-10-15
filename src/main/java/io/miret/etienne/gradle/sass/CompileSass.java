@@ -1,5 +1,6 @@
 package io.miret.etienne.gradle.sass;
 
+import kotlin.Pair;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.tools.ant.taskdefs.condition.Os;
@@ -23,6 +24,8 @@ public class CompileSass extends DefaultTask {
   private final WorkerExecutor workerExecutor;
 
   private final File sassExecutable;
+
+  private final List<Pair<String, String>> entryPoints = new ArrayList<>();
 
   public enum Style {
     expanded,
@@ -48,7 +51,7 @@ public class CompileSass extends DefaultTask {
   @Getter (onMethod_ = {@InputDirectory, @PathSensitive(PathSensitivity.RELATIVE)})
   private File sourceDir = new File (getProject ().getProjectDir (), "src/main/sass");
 
-  private List<File> loadPaths = new ArrayList<> ();
+  private final List<File> loadPaths = new ArrayList<>();
 
   @Setter
   @Getter (onMethod_ = {@Input})
@@ -113,6 +116,14 @@ public class CompileSass extends DefaultTask {
 
   public void loadPath (File loadPath) {
     loadPaths.add (loadPath);
+  }
+
+  public void entryPoint(String from, String to) {
+    entryPoints.add(new Pair<>(from, to));
+  }
+
+  public void entryPoint(Pair<String, String> entryPoint) {
+    entryPoints.add(entryPoint);
   }
 
   public void noCharset () {

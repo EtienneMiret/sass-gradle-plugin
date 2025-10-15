@@ -21,6 +21,10 @@ tasks.compileSass {
     destPath = "styles"
     sourceDir = file("${rootDir}/src/main/styles")
 
+    entryPoint("main.scss", "styles.css")
+    // You can also specify a pair
+    entryPoint("secondary.scss" to "other.css")
+
     loadPath(file("/var/lib/compass"))
 
     style = expanded
