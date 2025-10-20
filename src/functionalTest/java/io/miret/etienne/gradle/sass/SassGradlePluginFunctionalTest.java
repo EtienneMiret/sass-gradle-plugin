@@ -9,20 +9,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,9 +30,17 @@ class SassGradlePluginFunctionalTest {
   private WireMockServer server;
 
   @BeforeEach
-  void startServer () {
+  void startServer() throws IOException {
     server = new WireMockServer (options ().dynamicPort ());
     server.start ();
+    String archive = Os.isFamily(Os.FAMILY_WINDOWS) ? "archive.zip" : "archive.tgz";
+    try (InputStream input = SassGradlePluginFunctionalTest.class.getResourceAsStream(archive)) {
+      server.stubFor(get(anyUrl())
+          .willReturn(ok()
+              .withStatus(200)
+              .withBody(ByteStreams.toByteArray(input))
+          ));
+    }
   }
 
   @AfterEach
@@ -54,16 +57,7 @@ class SassGradlePluginFunctionalTest {
   }
 
   @Test
-  void should_install_sass () throws IOException {
-    String archive = Os.isFamily (Os.FAMILY_WINDOWS) ? "archive.zip" : "archive.tgz";
-    try (InputStream input = SassGradlePluginFunctionalTest.class.getResourceAsStream (archive)) {
-      server.stubFor (get (urlMatching ("/some.specific.version/dart-sass-.*"))
-          .willReturn (aResponse ()
-              .withStatus (200)
-              .withBody (ByteStreams.toByteArray (input))
-          ));
-    }
-
+  void should_install_sass() {
     GradleRunner runner = GradleRunner.create ();
     runner.withPluginClasspath ();
     runner.withEnvironment (singletonMap ("URL", server.baseUrl ()));
@@ -78,16 +72,7 @@ class SassGradlePluginFunctionalTest {
   }
 
   @Test
-  void should_download_specified_version () throws IOException {
-    String archive = Os.isFamily (Os.FAMILY_WINDOWS) ? "archive.zip" : "archive.tgz";
-    try (InputStream input = SassGradlePluginFunctionalTest.class.getResourceAsStream (archive)) {
-      server.stubFor (get (anyUrl ())
-          .willReturn (ok ()
-              .withStatus (200)
-              .withBody (ByteStreams.toByteArray (input))
-          ));
-    }
-
+  void should_download_specified_version() {
     GradleRunner.create ()
         .withPluginClasspath ()
         .withProjectDir (projectDir.toFile ())
@@ -307,6 +292,42 @@ class SassGradlePluginFunctionalTest {
         .build();
   }
 
+  @Test
+  void should_support_build_cache_when_installing_sass() throws Exception {
+    GradleRunner.create()
+        .withPluginClasspath()
+        .withArguments("--build-cache", "installSass")
+        .withProjectDir(projectDir.toFile())
+        .withEnvironment(singletonMap("URL", server.baseUrl()))
+        .build();
+    deleteDirectory(projectDir.resolve(".gradle/sass"));
+    GradleRunner.create()
+        .withPluginClasspath()
+        .withArguments("--build-cache", "installSass")
+        .withProjectDir(projectDir.toFile())
+        .withEnvironment(singletonMap("URL", server.baseUrl()))
+        .build();
+
+    server.verify(1, getRequestedFor(anyUrl()));
+  }
+
+  @Test
+  void should_support_build_cache_when_compiling_sass() throws Exception {
+    GradleRunner.create()
+        .withPluginClasspath()
+        .withArguments("--build-cache", "compileCustomSass")
+        .withProjectDir(projectDir.toFile())
+        .build();
+    deleteDirectory(projectDir.resolve("build"));
+    GradleRunner.create()
+        .withPluginClasspath()
+        .withArguments("--build-cache", "compileCustomSass")
+        .withProjectDir(projectDir.toFile())
+        .build();
+
+    assertThat(commandHistory()).content().hasLineCount(1);
+  }
+
   /**
    * Creates a fake sass executable, that will log it’s command line to
    * {@link #commandHistory()}.
@@ -339,7 +360,50 @@ class SassGradlePluginFunctionalTest {
    * per line.
    */
   private Path commandHistory() {
-    return projectDir.resolve("build/sass/history");
+    return projectDir.resolve("sass-history.txt");
+  }
+
+  /**
+   * Deletes the given directory and all its contents.
+   */
+  private void deleteDirectory(@Nonnull Path directory) throws IOException {
+    Files.walkFileTree(directory, new FileVisitor<Path>() {
+      @Override
+      public @Nonnull FileVisitResult preVisitDirectory(
+          Path dir,
+          @Nonnull BasicFileAttributes attrs
+      ) {
+        return FileVisitResult.CONTINUE;
+      }
+
+      @Override
+      public @Nonnull FileVisitResult visitFile(
+          Path file,
+          @Nonnull BasicFileAttributes attrs
+      ) throws IOException {
+        Files.delete(file);
+        return FileVisitResult.CONTINUE;
+      }
+
+      @Override
+      public @Nonnull FileVisitResult visitFileFailed(
+          Path file,
+          @Nonnull IOException e) throws IOException {
+        throw e;
+      }
+
+      @Override
+      public @Nonnull FileVisitResult postVisitDirectory(
+          Path dir,
+          IOException e
+      ) throws IOException {
+        if (e != null) {
+          throw e;
+        }
+        Files.delete(dir);
+        return FileVisitResult.CONTINUE;
+      }
+    });
   }
 
 }

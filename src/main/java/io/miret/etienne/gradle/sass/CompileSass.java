@@ -17,6 +17,7 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
+@CacheableTask
 public class CompileSass extends DefaultTask {
 
   private final WorkerExecutor workerExecutor;
@@ -44,7 +45,7 @@ public class CompileSass extends DefaultTask {
   private File outputDir = new File (getProject ().getBuildDir (), "sass");
 
   @Setter
-  @Getter (onMethod_ = {@InputDirectory})
+  @Getter (onMethod_ = {@InputDirectory, @PathSensitive(PathSensitivity.RELATIVE)})
   private File sourceDir = new File (getProject ().getProjectDir (), "src/main/sass");
 
   private List<File> loadPaths = new ArrayList<> ();
@@ -78,6 +79,7 @@ public class CompileSass extends DefaultTask {
   private SourceMapUrls sourceMapUrls = SourceMapUrls.relative;
 
   @InputFiles
+  @PathSensitive(PathSensitivity.RELATIVE)
   public FileCollection getInputFiles () {
     return getProject().files(
         getProject().fileTree(sourceDir),
@@ -88,6 +90,7 @@ public class CompileSass extends DefaultTask {
   }
 
   @InputFile
+  @PathSensitive(PathSensitivity.NONE)
   public File getExecutable () {
     return sassExecutable;
   }
