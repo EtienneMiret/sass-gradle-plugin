@@ -52,6 +52,13 @@ compileSass {
   // Source directory containing sass to compile:
   sourceDir = project.file ("${projectDir}/src/main/sass")
 
+  // Specify entry points for sass compilation
+  // (default is to compile all .scss files in sourceDir
+  // and output a .css file with the same name for each)
+  // Those paths are relative to sourceDir and outputDir/destPath respectively.
+  entryPoint "main.scss", "styles.css"
+  entryPoint "errors.scss", "errors.css"
+
   // Add a directory to sass load path (default is empty):
   loadPath project.file ('sass-lib')
   loadPath project.file ('/var/lib/compass')

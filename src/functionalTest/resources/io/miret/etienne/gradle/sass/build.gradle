@@ -65,3 +65,19 @@ task compileFileSourceMapRelative (type: CompileSass) {
   sourceMap = file
   sourceMapUrls = relative
 }
+
+task compileEntryPoint(type: CompileSass) {
+  entryPoint "main.scss", "style.css"
+}
+
+task compileSeveralEntryPoints(type: CompileSass) {
+  entryPoint "main.scss", "style.css"
+  entryPoint "errors.scss", "errors.css"
+}
+
+task compileCustomPaths(type: CompileSass) {
+  sourceDir = file("src/main/scss")
+  outputDir = file("build/css")
+  destPath = "styles"
+  entryPoint "main.scss", "main.css"
+}

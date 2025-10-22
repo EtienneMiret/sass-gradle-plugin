@@ -98,6 +98,51 @@ class SassGradlePluginFunctionalTest {
   }
 
   @Test
+  void should_use_entry_point() throws Exception {
+    GradleRunner.create()
+        .withPluginClasspath()
+        .withArguments("compileEntryPoint")
+        .withProjectDir(projectDir.toFile())
+        .build();
+
+    assertThat(commandHistory()).hasContent(String.format(
+        "sass --style=expanded --source-map-urls=relative %1$s/src/main/sass/main.scss:%1$s/build/sass/style.css",
+        projectDir.toRealPath()
+    ));
+  }
+
+  @Test
+  void should_use_all_entry_points() throws Exception {
+    GradleRunner.create()
+        .withPluginClasspath()
+        .withArguments("compileSeveralEntryPoints")
+        .withProjectDir(projectDir.toFile())
+        .build();
+
+    assertThat(commandHistory()).content()
+        .hasLineCount(1)
+        .startsWith("sass --style=expanded --source-map-urls=relative")
+        .contains(String.format("%1$s/src/main/sass/main.scss:%1$s/build/sass/style.css", projectDir.toRealPath()))
+        .contains(String.format("%1$s/src/main/sass/errors.scss:%1$s/build/sass/errors.css", projectDir.toRealPath()));
+  }
+
+  @Test
+  void should_use_custom_paths() throws Exception {
+    Files.createDirectories(projectDir.resolve("src/main/scss"));
+
+    GradleRunner.create()
+        .withPluginClasspath()
+        .withArguments("compileCustomPaths")
+        .withProjectDir(projectDir.toFile())
+        .build();
+
+    assertThat(commandHistory()).hasContent(String.format(
+        "sass --style=expanded --source-map-urls=relative %1$s/src/main/scss/main.scss:%1$s/build/css/styles/main.css",
+        projectDir.toRealPath()
+    ));
+  }
+
+  @Test
   void should_set_loadPaths () throws IOException {
     GradleRunner.create ()
         .withPluginClasspath ()
