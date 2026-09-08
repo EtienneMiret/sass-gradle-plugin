@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -141,6 +142,24 @@ class SassGradlePluginFunctionalTest {
     assertThat(commandHistory()).hasContent(String.format(
         "sass --style=expanded --source-map-urls=relative %1$s/src/main/scss/main.scss:%1$s/build/css/styles/main.css",
         projectDir.toRealPath()
+    ));
+  }
+
+  @Test
+  void should_accept_lazy_paths() throws IOException {
+    Files.createDirectories(projectDir.resolve("src/main/scss"));
+
+    GradleRunner.create()
+        .withPluginClasspath()
+        .withArguments("compileLazyPaths")
+        .withProjectDir(projectDir.toFile())
+        .build();
+
+    String root = projectDir.toRealPath().toString().replace('\\', '/');
+    String command = new String(Files.readAllBytes(commandHistory()), StandardCharsets.UTF_8).trim().replace('\\', '/');
+    assertThat(command).isEqualTo(String.format(
+        "sass --load-path=%1$s/sass-lib --style=expanded --source-map-urls=relative %1$s/src/main/scss:%1$s/build/lazy-css",
+        root
     ));
   }
 
