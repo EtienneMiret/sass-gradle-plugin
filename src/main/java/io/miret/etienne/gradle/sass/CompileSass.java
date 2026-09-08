@@ -6,7 +6,9 @@ import lombok.Setter;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.tasks.*;
 import org.gradle.workers.WorkQueue;
 import org.gradle.workers.WorkerExecutor;
@@ -19,13 +21,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 @CacheableTask
 public class CompileSass extends DefaultTask {
 
   private final WorkerExecutor workerExecutor;
+
+  private final ObjectFactory objects;
 
   private final File sassExecutable;
 
@@ -50,7 +53,7 @@ public class CompileSass extends DefaultTask {
 
   @Setter
   @Getter (onMethod_ = {@OutputDirectory})
-  private File outputDir = new File (getProject ().getBuildDir (), "sass");
+  private File outputDir = getProject ().getLayout ().getBuildDirectory ().dir ("sass").get ().getAsFile ();
 
   @Setter
   @Getter (onMethod_ = {@InputDirectory, @PathSensitive(PathSensitivity.RELATIVE)})
@@ -86,15 +89,19 @@ public class CompileSass extends DefaultTask {
   @Getter (onMethod_ = {@Input})
   private SourceMapUrls sourceMapUrls = SourceMapUrls.relative;
 
+  /**
+   * Gradle calls this getter while the task executes (to fingerprint the inputs), so it must not touch
+   * {@link #getProject()}: the configuration cache forbids that at execution time.
+   */
   @InputFiles
   @PathSensitive(PathSensitivity.RELATIVE)
   public FileCollection getInputFiles () {
-    return getProject().files(
-        getProject().fileTree(sourceDir),
-        loadPaths.stream()
-            .map(getProject()::fileTree)
-            .collect(toList())
-    );
+    ConfigurableFileCollection files = objects.fileCollection ();
+    files.from (objects.fileTree ().from (sourceDir));
+    for (File loadPath : loadPaths) {
+      files.from (objects.fileTree ().from (loadPath));
+    }
+    return files;
   }
 
   @InputFile
@@ -208,9 +215,10 @@ public class CompileSass extends DefaultTask {
   }
 
   @Inject
-  public CompileSass (WorkerExecutor workerExecutor) {
+  public CompileSass (WorkerExecutor workerExecutor, ObjectFactory objects) {
     super();
     this.workerExecutor = workerExecutor;
+    this.objects = objects;
 
     String command = Os.isFamily (Os.FAMILY_WINDOWS) ? "sass.bat" : "sass";
     SassGradlePluginExtension sassExtension = findExtension();
