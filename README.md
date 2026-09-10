@@ -30,6 +30,8 @@ sass {
 
   // Directory where to install dart-sass:
   directory = file ("${rootDir}/.gradle/sass")
+  // ... or, as a lazy property (same setting, DirectoryProperty):
+  installDirectory = layout.projectDirectory.dir (".gradle/sass")
 
   // Base URL where to download dart-sass from:
   baseUrl = 'https://github.com/sass/dart-sass/releases/download'
@@ -45,12 +47,16 @@ You may also configure the `compileSass` task:
 compileSass {
   // Directory where to output generated CSS:
   outputDir = project.file ("${buildDir}/sass")
+  // ... or, as a lazy property (same setting, DirectoryProperty):
+  outputDirectory = layout.buildDirectory.dir ("sass")
 
   // Sub path where to copy generated CSS, eg relative to war root:
   destPath = "."
 
   // Source directory containing sass to compile:
   sourceDir = project.file ("${projectDir}/src/main/sass")
+  // ... or, as a lazy property (same setting, DirectoryProperty):
+  sourceDirectory = layout.projectDirectory.dir ("src/main/sass")
 
   // Specify entry points for sass compilation
   // (default is to compile all .scss files in sourceDir
@@ -62,6 +68,8 @@ compileSass {
   // Add a directory to sass load path (default is empty):
   loadPath project.file ('sass-lib')
   loadPath project.file ('/var/lib/compass')
+  // Anything Gradle resolves to a directory works, including providers:
+  loadPath layout.projectDirectory.dir ('sass-lib')
 
   // Set the output style:
   // Possible values are “expanded” and “compressed”, default is “expanded”.

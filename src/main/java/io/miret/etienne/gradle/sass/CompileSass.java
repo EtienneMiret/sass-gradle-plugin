@@ -6,7 +6,13 @@ import lombok.Setter;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.ProjectLayout;
+import org.gradle.api.file.RegularFile;
+import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.*;
 import org.gradle.workers.WorkQueue;
 import org.gradle.workers.WorkerExecutor;
@@ -19,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 @CacheableTask
@@ -27,7 +32,9 @@ public class CompileSass extends DefaultTask {
 
   private final WorkerExecutor workerExecutor;
 
-  private final File sassExecutable;
+  private final ObjectFactory objects;
+
+  private final Provider<RegularFile> executable;
 
   @Getter (onMethod_ = @Input)
   private final List<Pair<String, String>> entryPoints = new ArrayList<>();
@@ -48,15 +55,23 @@ public class CompileSass extends DefaultTask {
     absolute
   }
 
-  @Setter
+  /**
+   * Directory where to output generated CSS. Lazy counterpart of {@link #getOutputDir()}, which reads and writes
+   * through it.
+   */
   @Getter (onMethod_ = {@OutputDirectory})
-  private File outputDir = new File (getProject ().getBuildDir (), "sass");
+  private final DirectoryProperty outputDirectory;
 
-  @Setter
+  /**
+   * Source directory containing sass to compile. Lazy counterpart of {@link #getSourceDir()}, which reads and
+   * writes through it.
+   */
   @Getter (onMethod_ = {@InputDirectory, @PathSensitive(PathSensitivity.RELATIVE)})
-  private File sourceDir = new File (getProject ().getProjectDir (), "src/main/sass");
+  private final DirectoryProperty sourceDirectory;
 
-  private final List<File> loadPaths = new ArrayList<>();
+  /** Directories added to the sass load path. Fingerprinted through {@link #getInputFiles()}. */
+  @Getter (onMethod_ = {@Internal})
+  private final ConfigurableFileCollection loadPaths;
 
   @Setter
   @Getter (onMethod_ = {@Input})
@@ -86,21 +101,39 @@ public class CompileSass extends DefaultTask {
   @Getter (onMethod_ = {@Input})
   private SourceMapUrls sourceMapUrls = SourceMapUrls.relative;
 
+  @Internal
+  public File getOutputDir () {
+    return outputDirectory.get ().getAsFile ();
+  }
+
+  public void setOutputDir (File outputDir) {
+    outputDirectory.set (outputDir);
+  }
+
+  @Internal
+  public File getSourceDir () {
+    return sourceDirectory.get ().getAsFile ();
+  }
+
+  public void setSourceDir (File sourceDir) {
+    sourceDirectory.set (sourceDir);
+  }
+
+  /**
+   * Gradle calls this getter while the task executes (to fingerprint the inputs), so it must not touch
+   * {@link #getProject()}: the configuration cache forbids that at execution time.
+   */
   @InputFiles
   @PathSensitive(PathSensitivity.RELATIVE)
   public FileCollection getInputFiles () {
-    return getProject().files(
-        getProject().fileTree(sourceDir),
-        loadPaths.stream()
-            .map(getProject()::fileTree)
-            .collect(toList())
-    );
+    return objects.fileCollection ()
+        .from (sourceDirectory.getAsFileTree (), loadPaths.getAsFileTree ());
   }
 
   @InputFile
   @PathSensitive(PathSensitivity.NONE)
   public File getExecutable () {
-    return sassExecutable;
+    return executable.get ().getAsFile ();
   }
 
   private SassGradlePluginExtension findExtension() {
@@ -120,7 +153,15 @@ public class CompileSass extends DefaultTask {
   }
 
   public void loadPath (File loadPath) {
-    loadPaths.add (loadPath);
+    loadPaths.from (loadPath);
+  }
+
+  /**
+   * Adds a load path given as anything Gradle can resolve to a directory: a {@code File}, a {@code Directory},
+   * a {@code Provider} of either, or a path string.
+   */
+  public void loadPath (Object loadPath) {
+    loadPaths.from (loadPath);
   }
 
   public void entryPoint(String from, String to) {
@@ -132,8 +173,8 @@ public class CompileSass extends DefaultTask {
   }
 
   private Map<File, File> fileEntryPoints() {
-    Path source = sourceDir.toPath();
-    Path output = outputDir.toPath().resolve(destPath);
+    Path source = getSourceDir ().toPath();
+    Path output = getOutputDir ().toPath().resolve(destPath);
     if (entryPoints.isEmpty()) {
       return Collections.singletonMap(
           source.toAbsolutePath().normalize().toFile(),
@@ -208,25 +249,29 @@ public class CompileSass extends DefaultTask {
   }
 
   @Inject
-  public CompileSass (WorkerExecutor workerExecutor) {
+  public CompileSass (WorkerExecutor workerExecutor, ObjectFactory objects, ProjectLayout layout) {
     super();
     this.workerExecutor = workerExecutor;
+    this.objects = objects;
+    this.outputDirectory = objects.directoryProperty ()
+        .convention (layout.getBuildDirectory ().dir ("sass"));
+    this.sourceDirectory = objects.directoryProperty ()
+        .convention (layout.getProjectDirectory ().dir ("src/main/sass"));
+    this.loadPaths = objects.fileCollection ();
 
     String command = Os.isFamily (Os.FAMILY_WINDOWS) ? "sass.bat" : "sass";
     SassGradlePluginExtension sassExtension = findExtension();
-    sassExecutable = sassExtension.getDirectory ()
-        .toPath ()
-        .resolve (sassExtension.getVersion ())
-        .resolve ("dart-sass")
-        .resolve (command)
-        .toFile ();
+    Provider<String> version = getProject ().provider (sassExtension::getVersion);
+    executable = sassExtension.getInstallDirectory ()
+        .dir (version)
+        .map (installed -> installed.dir ("dart-sass").file (command));
   }
 
   @TaskAction
   public void compileSass () {
     WorkQueue workQueue = workerExecutor.noIsolation();
     workQueue.submit(CompileSassWorkAction.class, compileSassWorkParameters -> {
-      compileSassWorkParameters.getExecutable ().set (sassExecutable);
+      compileSassWorkParameters.getExecutable ().set (getExecutable ());
       compileSassWorkParameters.getLoadPaths ().setFrom (loadPaths);
       compileSassWorkParameters.getEntryPoints().set(fileEntryPoints());
       compileSassWorkParameters.getStyle ().set (style);

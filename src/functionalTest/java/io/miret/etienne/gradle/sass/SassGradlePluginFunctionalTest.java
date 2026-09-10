@@ -3,7 +3,9 @@ package io.miret.etienne.gradle.sass;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.google.common.io.ByteStreams;
 import org.apache.tools.ant.taskdefs.condition.Os;
+import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
+import org.gradle.testkit.runner.TaskOutcome;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -139,6 +142,24 @@ class SassGradlePluginFunctionalTest {
     assertThat(commandHistory()).hasContent(String.format(
         "sass --style=expanded --source-map-urls=relative %1$s/src/main/scss/main.scss:%1$s/build/css/styles/main.css",
         projectDir.toRealPath()
+    ));
+  }
+
+  @Test
+  void should_accept_lazy_paths() throws IOException {
+    Files.createDirectories(projectDir.resolve("src/main/scss"));
+
+    GradleRunner.create()
+        .withPluginClasspath()
+        .withArguments("compileLazyPaths")
+        .withProjectDir(projectDir.toFile())
+        .build();
+
+    String root = projectDir.toRealPath().toString().replace('\\', '/');
+    String command = new String(Files.readAllBytes(commandHistory()), StandardCharsets.UTF_8).trim().replace('\\', '/');
+    assertThat(command).isEqualTo(String.format(
+        "sass --load-path=%1$s/sass-lib --style=expanded --source-map-urls=relative %1$s/src/main/scss:%1$s/build/lazy-css",
+        root
     ));
   }
 
@@ -329,12 +350,24 @@ class SassGradlePluginFunctionalTest {
   }
 
   @Test
-  void should_support_Gradle_configuration_cache() {
+  void should_support_Gradle_configuration_cache() throws IOException {
     GradleRunner.create()
         .withPluginClasspath()
-        .withArguments("--configuration-cache", "compileCustomSass")
+        .withArguments("--configuration-cache", "compileCustomSass", "compileWithLoadPath")
         .withProjectDir(projectDir.toFile())
         .build();
+    Files.createDirectories(projectDir.resolve("sass-lib"));
+    Files.createFile(projectDir.resolve("sass-lib/foo.scss"));
+    BuildResult result = GradleRunner.create()
+        .withPluginClasspath()
+        .withArguments("--configuration-cache", "compileCustomSass", "compileWithLoadPath")
+        .withProjectDir(projectDir.toFile())
+        .build();
+
+    assertThat(result.getOutput()).contains("Reusing configuration cache.");
+    assertThat(result.task(":compileCustomSass").getOutcome()).isEqualTo(TaskOutcome.UP_TO_DATE);
+    assertThat(result.task(":compileWithLoadPath").getOutcome()).isEqualTo(TaskOutcome.SUCCESS);
+    assertThat(commandHistory()).content().hasLineCount(3);
   }
 
   @Test
