@@ -3,7 +3,9 @@ package io.miret.etienne.gradle.sass;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.google.common.io.ByteStreams;
 import org.apache.tools.ant.taskdefs.condition.Os;
+import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
+import org.gradle.testkit.runner.TaskOutcome;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -329,12 +331,24 @@ class SassGradlePluginFunctionalTest {
   }
 
   @Test
-  void should_support_Gradle_configuration_cache() {
+  void should_support_Gradle_configuration_cache() throws IOException {
     GradleRunner.create()
         .withPluginClasspath()
-        .withArguments("--configuration-cache", "compileCustomSass")
+        .withArguments("--configuration-cache", "compileCustomSass", "compileWithLoadPath")
         .withProjectDir(projectDir.toFile())
         .build();
+    Files.createDirectories(projectDir.resolve("sass-lib"));
+    Files.createFile(projectDir.resolve("sass-lib/foo.scss"));
+    BuildResult result = GradleRunner.create()
+        .withPluginClasspath()
+        .withArguments("--configuration-cache", "compileCustomSass", "compileWithLoadPath")
+        .withProjectDir(projectDir.toFile())
+        .build();
+
+    assertThat(result.getOutput()).contains("Reusing configuration cache.");
+    assertThat(result.task(":compileCustomSass").getOutcome()).isEqualTo(TaskOutcome.UP_TO_DATE);
+    assertThat(result.task(":compileWithLoadPath").getOutcome()).isEqualTo(TaskOutcome.SUCCESS);
+    assertThat(commandHistory()).content().hasLineCount(3);
   }
 
   @Test
