@@ -12,6 +12,8 @@ plugins {
 sass {
     version = "1.63.6"
     directory = file("${rootDir}/.gradle/sass-cache")
+    // ... or lazily:
+    installDirectory.set(layout.projectDirectory.dir(".gradle/sass-cache"))
     baseUrl = "https://github.com/sass/dart-sass/releases/download"
     noAutoCopy()
 }
@@ -20,6 +22,9 @@ tasks.compileSass {
     outputDir = file("${buildDir}/generated-css")
     destPath = "styles"
     sourceDir = file("${rootDir}/src/main/styles")
+    // The same three paths as lazy properties (Gradle 8.2+ also accepts `outputDirectory = ...`):
+    outputDirectory.set(layout.buildDirectory.dir("generated-css"))
+    sourceDirectory.set(layout.projectDirectory.dir("src/main/styles"))
 
     entryPoint("main.scss", "styles.css")
     // You can also specify a pair

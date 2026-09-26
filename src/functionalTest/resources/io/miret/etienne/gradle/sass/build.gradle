@@ -81,3 +81,9 @@ task compileCustomPaths(type: CompileSass) {
   destPath = "styles"
   entryPoint "main.scss", "main.css"
 }
+
+task compileLazyPaths(type: CompileSass) {
+  sourceDirectory = layout.projectDirectory.dir("src/main/scss")
+  outputDirectory = layout.buildDirectory.dir("lazy-css")
+  loadPath(layout.projectDirectory.dir("sass-lib"))
+}

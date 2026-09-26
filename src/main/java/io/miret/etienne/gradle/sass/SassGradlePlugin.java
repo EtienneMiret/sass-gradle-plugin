@@ -10,25 +10,20 @@ import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.War;
 
-import java.io.File;
-
 public class SassGradlePlugin implements Plugin<Project> {
 
   public void apply (Project project) {
     SassGradlePluginExtension extension = project.getExtensions ()
         .create ("sass", SassGradlePluginExtension.class, project);
+    Provider<String> version = project.provider (extension::getVersion);
+    Provider<String> archiveName = version.map (this::archiveName);
 
     TaskProvider<Download> downloadSass = project.getTasks ()
         .register ("downloadSass", Download.class, task -> {
-          String archiveName = archiveName (extension.getVersion ());
-          File archive = extension.getDirectory ()
-              .toPath ()
-              .resolve ("archive")
-              .resolve (archiveName)
-              .toFile ();
           task.setDescription ("Download a sass archive.");
-          task.src (String.format ("%s/%s/%s", extension.getBaseUrl (), extension.getVersion (), archiveName));
-          task.dest (archive);
+          task.src (archiveName.map (name ->
+              String.format ("%s/%s/%s", extension.getBaseUrl (), extension.getVersion (), name)));
+          task.dest (extension.getInstallDirectory ().file (archiveName.map (name -> "archive/" + name)));
           task.tempAndMove (true);
           task.overwrite (false);
           task.onlyIf (t -> !((Download)t).getDest().exists());
@@ -43,7 +38,7 @@ public class SassGradlePlugin implements Plugin<Project> {
           task.setDescription ("Unpack and install a sass archive.");
           task.dependsOn (downloadSass);
           task.from (downloadedFiles);
-          task.into (new File (extension.getDirectory (), extension.getVersion ()));
+          task.into (extension.getInstallDirectory ().dir (version));
           task.getOutputs().cacheIf (spec -> true);
         });
     compileSass(project, extension, installSass);
@@ -64,7 +59,7 @@ public class SassGradlePlugin implements Plugin<Project> {
         .configureEach (task -> {
           if (extension.isAutoCopy ()) {
             task.dependsOn (compileSass);
-            task.from (compileSass.map (CompileSass::getOutputDir));
+            task.from (compileSass.flatMap (CompileSass::getOutputDirectory));
           }
         });
     project.getSubprojects().forEach(
