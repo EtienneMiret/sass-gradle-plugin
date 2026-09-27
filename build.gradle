@@ -39,19 +39,17 @@ test {
 version '2.0.0-SNAPSHOT'
 group 'io.miret.etienne.gradle'
 
-pluginBundle {
+gradlePlugin {
     website = 'https://github.com/EtienneMiret/sass-gradle-plugin'
     vcsUrl = 'https://github.com/EtienneMiret/sass-gradle-plugin'
-    tags = ['sass', 'scss']
-}
 
-gradlePlugin {
     plugins {
         sass {
             id = 'io.miret.etienne.sass'
             displayName = 'Sass Compile'
             description = 'A Gradle plugin to compile scss files using the official Dart Sass compiler.'
             implementationClass = 'io.miret.etienne.gradle.sass.SassGradlePlugin'
+            tags.set(['sass', 'scss'])
         }
     }
 }
