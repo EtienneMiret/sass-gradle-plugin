@@ -7,10 +7,13 @@ repositories {
     mavenCentral()
 }
 
-def javaVersion = JavaVersion.VERSION_1_8
+def javaVersion = JavaLanguageVersion.of(21)
 
-sourceCompatibility = javaVersion
-targetCompatibility = javaVersion
+java {
+    toolchain {
+        languageVersion = javaVersion
+    }
+}
 
 configurations {
     functionalTestImplementation.extendsFrom testImplementation
@@ -76,7 +79,9 @@ javadoc {
 }
 
 publishPlugins {
-    if (JavaVersion.current() != javaVersion) {
-        throw new GradleException ("This build must be ran with Java ${javaVersion}.")
+    doFirst {
+        if (JavaLanguageVersion.of(JavaVersion.current().toString()) != javaVersion) {
+            throw new GradleException ("This build must be ran with Java ${javaVersion}.")
+        }
     }
 }
