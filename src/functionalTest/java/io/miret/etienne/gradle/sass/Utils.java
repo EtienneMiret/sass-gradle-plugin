@@ -66,7 +66,7 @@ public class Utils {
     if (Os.isFamily (Os.FAMILY_WINDOWS)) {
       try (
           ZipOutputStream zip = new ZipOutputStream (bytes);
-          InputStream sass = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("sass.bat")
+          InputStream sass = Utils.class.getResourceAsStream ("sass.bat")
       ) {
         assert sass != null;
         zip.putNextEntry (new ZipEntry("dart-sass/sass.bat"));
@@ -76,7 +76,7 @@ public class Utils {
       try (
           GZIPOutputStream gz = new GZIPOutputStream (bytes);
           TarArchiveOutputStream tgz = new TarArchiveOutputStream (gz);
-          InputStream sass = SassGradlePlugin_withWar_FunctionalTest.class.getResourceAsStream ("sass.sh")
+          InputStream sass = Utils.class.getResourceAsStream ("sass.sh")
       ) {
         assert sass != null;
         TarArchiveEntry entry = new TarArchiveEntry ("dart-sass/sass");
