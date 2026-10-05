@@ -57,7 +57,7 @@ class MultiProjectTest {
       TarArchiveOutputStream(gzip).use { tar ->
         val entry = TarArchiveEntry("dart-sass/sass")
         entry.size = header.size + LOREM_IPSUM.size.toLong() * LOREM_COPIES + footer.size
-        entry.mode = "755".toInt(8)
+        entry.mode = EXEC_FILE_MODE
         tar.putArchiveEntry(entry)
         tar.write(header)
         repeat(LOREM_COPIES) {
@@ -93,7 +93,7 @@ class MultiProjectTest {
       "settings.gradle",
     )
 
-    Utils.copy("/io/miret/etienne/gradle/sass/multi-project", files, projectDir)
+    copyResources("/io/miret/etienne/gradle/sass/multi-project", files, projectDir)
   }
 
   @Test

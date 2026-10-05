@@ -40,7 +40,7 @@ class MultipleApplyTest {
         .willReturn(
           aResponse()
             .withStatus(200)
-            .withBody(Utils.createArchive())
+            .withBody(createArchive())
         )
     )
   }
@@ -59,7 +59,7 @@ class MultipleApplyTest {
       "build.gradle",
       "settings.gradle",
     )
-    Utils.copy("/io/miret/etienne/gradle/sass/multiple-apply", projectResources, projectDir)
+    copyResources("/io/miret/etienne/gradle/sass/multiple-apply", projectResources, projectDir)
   }
 
   @Test

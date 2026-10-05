@@ -31,7 +31,7 @@ class WithWarTest {
         .willReturn(
           aResponse()
             .withStatus(200)
-            .withBody(Utils.createArchive())
+            .withBody(createArchive())
         )
     )
   }
