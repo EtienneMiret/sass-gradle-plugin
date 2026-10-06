@@ -182,15 +182,9 @@ open class CompileSass
     checkNotNull(sassExtension) {
       "SassGradlePluginExtension wasn't registered in any parent project."
     }
-    val directory = checkNotNull(sassExtension.directory) {
-      "Use the default sass.directory or set it to a non-null value."
-    }
-    val version = checkNotNull(sassExtension.version) {
-      "Use the default sass.version or set it to a non-null value."
-    }
-    this.executable = directory
+    this.executable = sassExtension.actualDirectory
       .toPath()
-      .resolve(version)
+      .resolve(sassExtension.actualVersion)
       .resolve("dart-sass")
       .resolve(command)
       .toFile()
