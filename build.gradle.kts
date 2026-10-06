@@ -30,8 +30,6 @@ val functionalTestRuntimeOnly =
 
 dependencies {
   implementation("de.undercouch:gradle-download-task:5.7.0")
-  compileOnly("org.projectlombok:lombok:1.18.48")
-  annotationProcessor("org.projectlombok:lombok:1.18.48")
 
   testImplementation("org.assertj:assertj-core:3.27.7")
   testImplementation(platform("org.junit:junit-bom:5.14.4"))
@@ -83,10 +81,6 @@ val functionalTests = tasks.register("functionalTest", Test::class) {
 
 tasks.check {
   dependsOn(functionalTests)
-}
-
-tasks.javadoc {
-  isFailOnError = false
 }
 
 tasks.publishPlugins {
