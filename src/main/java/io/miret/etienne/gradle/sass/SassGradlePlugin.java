@@ -62,7 +62,7 @@ public class SassGradlePlugin implements Plugin<Project> {
     project.getTasks ()
         .withType (War.class)
         .configureEach (task -> {
-          if (extension.isAutoCopy ()) {
+          if (extension.getAutoCopy()) {
             task.dependsOn (compileSass);
             task.from (compileSass.map (CompileSass::getOutputDir));
           }
