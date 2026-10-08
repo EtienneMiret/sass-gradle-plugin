@@ -1,12 +1,8 @@
 package io.miret.etienne.gradle.sass
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import org.assertj.core.api.Assertions.assertThat
-import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -24,16 +20,7 @@ class WithWarTest {
 
   @BeforeEach
   fun startAndSetupServer() {
-    server = WireMockServer(options().dynamicPort())
-    server.start()
-    server.stubFor(
-      get(urlMatching("/1.23.7/dart-sass-.*"))
-        .willReturn(
-          aResponse()
-            .withStatus(200)
-            .withBody(createArchive())
-        )
-    )
+    server = startSassServer(urlMatching("/1.23.7/dart-sass-.*"), createArchive())
   }
 
   @AfterEach
@@ -82,12 +69,7 @@ class WithWarTest {
       Files.copy(input!!, projectDir.resolve("build.gradle"))
     }
 
-    GradleRunner.create()
-      .withPluginClasspath()
-      .withEnvironment(mapOf("URL" to server.baseUrl()))
-      .withArguments("assemble")
-      .withProjectDir(projectDir.toFile())
-      .build()
+    runGradle(projectDir, mapOf("URL" to server.baseUrl()), "assemble")
 
     Files.newInputStream(projectDir.resolve("build/libs/cool-webapp-1.0.0.war")).use { input ->
       ZipInputStream(input).use { zip ->

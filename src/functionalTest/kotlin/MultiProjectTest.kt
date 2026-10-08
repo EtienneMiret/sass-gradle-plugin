@@ -1,14 +1,10 @@
 package io.miret.etienne.gradle.sass
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
 import org.assertj.core.api.Assertions.assertThat
-import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -36,9 +32,6 @@ class MultiProjectTest {
 
   @BeforeEach
   fun startServer() {
-    server = WireMockServer(options().dynamicPort())
-    server.start()
-
     val header = """
       #!/bin/sh
       
@@ -67,14 +60,7 @@ class MultiProjectTest {
         tar.closeArchiveEntry()
       }
     }
-    server.stubFor(
-      get(urlMatching("/42.0/dart-sass-.*"))
-        .willReturn(
-          aResponse()
-            .withStatus(200)
-            .withBody(archive.toByteArray())
-        )
-    )
+    server = startSassServer(urlMatching("/42.0/dart-sass-.*"), archive.toByteArray())
   }
 
   @AfterEach
@@ -101,12 +87,12 @@ class MultiProjectTest {
     val expected = String(LOREM_IPSUM, StandardCharsets.US_ASCII)
       .repeat(LOREM_COPIES)
 
-    GradleRunner.create()
-      .withPluginClasspath()
-      .withEnvironment(mapOf("URL" to server.baseUrl()))
-      .withArguments(":app:compileSass", ":lib:compileSass")
-      .withProjectDir(projectDir.toFile())
-      .build()
+    runGradle(
+      projectDir,
+      mapOf("URL" to server.baseUrl()),
+      ":app:compileSass",
+      ":lib:compileSass",
+    )
 
     assertThat(projectDir.resolve("app/build/sass/style.css"))
       .hasContent(expected)

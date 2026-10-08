@@ -2,15 +2,11 @@ package io.miret.etienne.gradle.sass
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.anyUrl
-import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
-import com.github.tomakehurst.wiremock.client.WireMock.ok
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -34,18 +30,9 @@ internal class SassGradlePluginFunctionalTest {
 
   @BeforeEach
   fun startServer() {
-    server = WireMockServer(options().dynamicPort())
-    server.start()
     val archive = if (Os.isFamily(Os.FAMILY_WINDOWS)) "archive.zip" else "archive.tgz"
     SassGradlePluginFunctionalTest::class.java.getResourceAsStream(archive).use { input ->
-      server.stubFor(
-        get(anyUrl())
-          .willReturn(
-            ok()
-              .withStatus(200)
-              .withBody(input!!.readAllBytes())
-          )
-      )
+      server = startSassServer(anyUrl(), input!!.readAllBytes())
     }
   }
 
@@ -300,12 +287,7 @@ internal class SassGradlePluginFunctionalTest {
    * Runs Gradle in the project directory with the given arguments.
    */
   private fun runGradle(vararg arguments: String): BuildResult =
-    GradleRunner.create()
-      .withPluginClasspath()
-      .withArguments(*arguments)
-      .withProjectDir(projectDir.toFile())
-      .withEnvironment(mapOf("URL" to server.baseUrl()))
-      .build()
+    runGradle(projectDir, mapOf("URL" to server.baseUrl()), *arguments)
 
   /**
    * Deletes the given directory and all its contents.

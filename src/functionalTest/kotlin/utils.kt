@@ -1,8 +1,15 @@
 package io.miret.etienne.gradle.sass
 
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
+import com.github.tomakehurst.wiremock.matching.UrlPattern
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.testkit.runner.BuildResult
+import org.gradle.testkit.runner.GradleRunner
 import java.io.ByteArrayOutputStream
 import java.nio.file.Files
 import java.nio.file.Path
@@ -85,3 +92,46 @@ fun createArchive(): ByteArray {
   }
   return bytes.toByteArray()
 }
+
+/**
+ * Starts a server, on a dynamic port, that stands in for the
+ * Dart Sass release host.
+ *
+ * The caller is responsible for stopping the returned server.
+ *
+ * @param url the URLs for which the archive is served.
+ * @param archive the content of the archive to serve.
+ */
+fun startSassServer(url: UrlPattern, archive: ByteArray): WireMockServer {
+  val server = WireMockServer(options().dynamicPort())
+  server.start()
+  server.stubFor(
+    get(url)
+      .willReturn(
+        aResponse()
+          .withStatus(200)
+          .withBody(archive)
+      )
+  )
+  return server
+}
+
+/**
+ * Runs Gradle, with this plugin on the classpath, and expects
+ * the build to succeed.
+ *
+ * @param projectDir the directory of the project to build.
+ * @param environment the whole environment of the build.
+ * @param arguments the command line arguments for Gradle.
+ */
+fun runGradle(
+  projectDir: Path,
+  environment: Map<String, String>,
+  vararg arguments: String,
+): BuildResult =
+  GradleRunner.create()
+    .withPluginClasspath()
+    .withEnvironment(environment)
+    .withArguments(*arguments)
+    .withProjectDir(projectDir.toFile())
+    .build()
