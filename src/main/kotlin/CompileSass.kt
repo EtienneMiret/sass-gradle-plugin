@@ -4,6 +4,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
@@ -64,9 +65,16 @@ open class CompileSass
   val absolute: SourceMapUrls
     @Internal get() = SourceMapUrls.absolute
 
-  @get:InputFile
-  @get:PathSensitive(PathSensitivity.NONE)
+  /**
+   * Resolved lazily, so that the `sass` extension can still be configured
+   * after this task is created.
+   */
+  private val executableProvider: Provider<File>
+
   val executable: File
+    @InputFile
+    @PathSensitive(PathSensitivity.NONE)
+    get() = executableProvider.get()
 
   @get:Input
   val entryPoints: MutableList<Pair<String, String>> = mutableListOf()
@@ -182,12 +190,14 @@ open class CompileSass
     checkNotNull(sassExtension) {
       "SassGradlePluginExtension wasn't registered in any parent project."
     }
-    this.executable = sassExtension.actualDirectory
-      .toPath()
-      .resolve(sassExtension.actualVersion)
-      .resolve("dart-sass")
-      .resolve(command)
-      .toFile()
+    this.executableProvider = project.provider {
+      sassExtension.actualDirectory
+        .toPath()
+        .resolve(sassExtension.actualVersion)
+        .resolve("dart-sass")
+        .resolve(command)
+        .toFile()
+    }
   }
 
   @TaskAction

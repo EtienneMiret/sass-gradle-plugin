@@ -17,6 +17,7 @@ import java.nio.file.FileVisitResult
 import java.nio.file.FileVisitor
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.PosixFilePermissions
@@ -68,6 +69,18 @@ internal class SassGradlePluginFunctionalTest {
 
   @Test
   fun `should compile sass`() {
+    runGradle("compileCustomSass")
+
+    assertThat(commandHistory)
+      .hasContent("sass --style=expanded --source-map-urls=relative $dir/src/main/sass:$dir/build/sass")
+  }
+
+  @Test
+  fun `should use sass configured after the task`() {
+    SassGradlePluginFunctionalTest::class.java.getResourceAsStream("build-late-configuration.gradle").use { input ->
+      Files.copy(input!!, projectDir.resolve("build.gradle"), StandardCopyOption.REPLACE_EXISTING)
+    }
+
     runGradle("compileCustomSass")
 
     assertThat(commandHistory)
