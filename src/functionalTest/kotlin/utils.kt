@@ -79,12 +79,12 @@ fun createArchive(): ByteArray {
     GZIPOutputStream(bytes).use { gz ->
       TarArchiveOutputStream(gz).use { tgz ->
         pkg.getResourceAsStream("sass.sh").use { sass ->
-          checkNotNull(sass)
+          val data = sass!!.readAllBytes()
           val entry = TarArchiveEntry("dart-sass/sass")
-          entry.size = sass.available().toLong()
+          entry.size = data.size.toLong()
           entry.mode = EXEC_FILE_MODE
           tgz.putArchiveEntry(entry)
-          sass.copyTo(tgz)
+          tgz.write(data)
           tgz.closeArchiveEntry()
         }
       }
