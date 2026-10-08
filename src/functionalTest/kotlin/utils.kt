@@ -121,7 +121,8 @@ fun startSassServer(url: UrlPattern, archive: ByteArray): WireMockServer {
  * the build to succeed.
  *
  * @param projectDir the directory of the project to build.
- * @param environment the whole environment of the build.
+ * @param environment variables added to the inherited environment
+ * of the build, overriding inherited ones of the same name.
  * @param arguments the command line arguments for Gradle.
  */
 fun runGradle(
@@ -131,7 +132,7 @@ fun runGradle(
 ): BuildResult =
   GradleRunner.create()
     .withPluginClasspath()
-    .withEnvironment(environment)
+    .withEnvironment(System.getenv() + environment)
     .withArguments(*arguments)
     .withProjectDir(projectDir.toFile())
     .build()
