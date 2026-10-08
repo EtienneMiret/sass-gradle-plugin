@@ -1,0 +1,13 @@
+import io.miret.etienne.gradle.sass.CompileSass
+
+plugins {
+  id 'io.miret.etienne.sass'
+}
+
+// Created before the sass extension is configured.
+task compileCustomSass (type: CompileSass)
+
+sass {
+  version = 'some.specific.version'
+  baseUrl = System.getenv("URL")
+}
