@@ -53,6 +53,9 @@ class SassGradlePlugin : Plugin<Project> {
         outputs.cacheIf { true }
       }
     compileSass(project, extension, installSass)
+    project.subprojects.forEach {
+      compileSass(it, extension, installSass)
+    }
   }
 
   private fun compileSass(
@@ -73,9 +76,6 @@ class SassGradlePlugin : Plugin<Project> {
           from(compileSass.map { it.outputDir })
         }
       }
-    project.subprojects.forEach {
-      compileSass(it, extension, installSass)
-    }
   }
 
   private fun archiveName(version: String) =
