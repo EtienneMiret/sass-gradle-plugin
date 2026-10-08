@@ -73,6 +73,8 @@ class MultiProjectTest {
     val files = listOf(
       "app/build.gradle",
       "app/src/main/sass/foo.scss",
+      "app/nested/build.gradle",
+      "app/nested/src/main/sass/baz.scss",
       "lib/build.gradle",
       "lib/src/main/sass/bar.scss",
       "build.gradle",
@@ -97,6 +99,21 @@ class MultiProjectTest {
     assertThat(projectDir.resolve("app/build/sass/style.css"))
       .hasContent(expected)
     assertThat(projectDir.resolve("lib/build/sass/style.css"))
+      .hasContent(expected)
+  }
+
+  @Test
+  fun `should install and run sass in nested project`() {
+    val expected = String(LOREM_IPSUM, StandardCharsets.US_ASCII)
+      .repeat(LOREM_COPIES)
+
+    runGradle(
+      projectDir,
+      mapOf("URL" to server.baseUrl()),
+      ":app:nested:compileSass",
+    )
+
+    assertThat(projectDir.resolve("app/nested/build/sass/style.css"))
       .hasContent(expected)
   }
 
