@@ -1,3 +1,4 @@
 rootProject.name = 'test-multi-project'
 include 'app'
 include 'lib'
+include 'app:nested'
