@@ -3,18 +3,10 @@ package io.miret.etienne.gradle.sass
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.RegularFile
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.submit
 import org.gradle.workers.WorkerExecutor
@@ -27,6 +19,10 @@ open class CompileSass
   private val workerExecutor: WorkerExecutor,
   private val objects: ObjectFactory,
 ) : DefaultTask() {
+
+  @get:InputFile
+  @get:PathSensitive(PathSensitivity.NONE)
+  val executable: Provider<RegularFile>
 
   enum class Style {
     expanded,
@@ -64,17 +60,6 @@ open class CompileSass
 
   val absolute: SourceMapUrls
     @Internal get() = SourceMapUrls.absolute
-
-  /**
-   * Resolved lazily, so that the `sass` extension can still be configured
-   * after this task is created.
-   */
-  private val executableProvider: Provider<File>
-
-  val executable: File
-    @InputFile
-    @PathSensitive(PathSensitivity.NONE)
-    get() = executableProvider.get()
 
   @get:Input
   val entryPoints: MutableList<Pair<String, String>> = mutableListOf()
@@ -190,14 +175,14 @@ open class CompileSass
     checkNotNull(sassExtension) {
       "SassGradlePluginExtension wasn't registered in any parent project."
     }
-    this.executableProvider = project.provider {
+    executable = objects.fileProperty().fileProvider(project.provider {
       sassExtension.actualDirectory
         .toPath()
         .resolve(sassExtension.actualVersion)
         .resolve("dart-sass")
         .resolve(command)
         .toFile()
-    }
+    })
   }
 
   @TaskAction
