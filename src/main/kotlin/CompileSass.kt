@@ -32,6 +32,13 @@ abstract class CompileSass
   @get:Input
   abstract val style: Property<Style>
 
+  /**
+   * Define where to output the source map.
+   * Either [file] (default), [none] or [embedded].
+   */
+  @get:Input
+  abstract val sourceMapLocation: Property<SourceMapLocation>
+
   enum class Style {
     expanded,
     compressed,
@@ -50,25 +57,36 @@ abstract class CompileSass
   val compressed: Style
     @Internal get() = Style.compressed
 
-  enum class SourceMap {
+  enum class SourceMapLocation {
     none,
-    embed,
+    embedded,
     file,
   }
+
+  /**
+   * Do not output any source map.
+   * See [--no-source-map](https://sass-lang.com/documentation/cli/dart-sass/#no-source-map).
+   */
+  val none: SourceMapLocation
+    @Internal get() = SourceMapLocation.none
+
+  /**
+   * Embed the source map in the CSS file.
+   * See [--embed-source-map](https://sass-lang.com/documentation/cli/dart-sass/#embed-source-map).
+   */
+  val embedded: SourceMapLocation
+    @Internal get() = SourceMapLocation.embedded
+
+  /**
+   * Write the source map in a separate file and link it from the CSS.
+   */
+  val file: SourceMapLocation
+    @Internal get() = SourceMapLocation.file
 
   enum class SourceMapUrls {
     relative,
     absolute,
   }
-
-  val none: SourceMap
-    @Internal get() = SourceMap.none
-
-  val embed: SourceMap
-    @Internal get() = SourceMap.embed
-
-  val file: SourceMap
-    @Internal get() = SourceMap.file
 
   val relative: SourceMapUrls
     @Internal get() = SourceMapUrls.relative
@@ -106,9 +124,6 @@ abstract class CompileSass
   @get:Input
   var quiet = false
     private set
-
-  @get:Input
-  var sourceMap = SourceMap.file
 
   @get:Input
   var sourceMapUrls = SourceMapUrls.relative
@@ -196,6 +211,7 @@ abstract class CompileSass
         .toFile()
     })
     style.convention(Style.expanded)
+    sourceMapLocation.convention(SourceMapLocation.file)
   }
 
   @TaskAction
@@ -206,7 +222,7 @@ abstract class CompileSass
       loadPaths.setFrom(this@CompileSass.loadPaths)
       entryPoints.set(this@CompileSass.fileEntryPoints)
       style.set(this@CompileSass.style)
-      sourceMap.set(this@CompileSass.sourceMap)
+      sourceMapLocation.set(this@CompileSass.sourceMapLocation)
       sourceMapUrls.set(this@CompileSass.sourceMapUrls)
       watch.set(this@CompileSass.watch)
       charset.set(this@CompileSass.charset)

@@ -37,32 +37,32 @@ task compileNoErrorCss (type: CompileSass) {
 }
 
 task compileNoSourceMapAbsolute (type: CompileSass) {
-  sourceMap = none
+  sourceMapLocation = none
   sourceMapUrls = absolute
 }
 
 task compileNoSourceMapRelative (type: CompileSass) {
-  sourceMap = none
+  sourceMapLocation = none
   sourceMapUrls = relative
 }
 
 task compileEmbedSourceMapAbsolute (type: CompileSass) {
-  sourceMap = embed
+  sourceMapLocation = embedded
   sourceMapUrls = absolute
 }
 
 task compileEmbedSourceMapRelative (type: CompileSass) {
-  sourceMap = embed
+  sourceMapLocation = embedded
   sourceMapUrls = relative
 }
 
 task compileFileSourceMapAbsolute (type: CompileSass) {
-  sourceMap = file
+  sourceMapLocation = file
   sourceMapUrls = absolute
 }
 
 task compileFileSourceMapRelative (type: CompileSass) {
-  sourceMap = file
+  sourceMapLocation = file
   sourceMapUrls = relative
 }
 

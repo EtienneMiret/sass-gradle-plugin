@@ -27,13 +27,13 @@ abstract class CompileSassWorkAction
       if (parameters.quiet.get()) {
         arguments.add("--quiet")
       }
-      val sourceMap = parameters.sourceMap.get()
+      val sourceMap = parameters.sourceMapLocation.get()
       when (sourceMap) {
-        CompileSass.SourceMap.none -> arguments.add("--no-source-map")
-        CompileSass.SourceMap.embed -> arguments.add("--embed-source-map")
-        CompileSass.SourceMap.file -> {}
+        CompileSass.SourceMapLocation.none -> arguments.add("--no-source-map")
+        CompileSass.SourceMapLocation.embedded -> arguments.add("--embed-source-map")
+        CompileSass.SourceMapLocation.file -> {}
       }
-      if (sourceMap != CompileSass.SourceMap.none) {
+      if (sourceMap != CompileSass.SourceMapLocation.none) {
         arguments.add("--source-map-urls=${parameters.sourceMapUrls.get()}")
       }
       parameters.entryPoints.get().forEach { (from, to) ->

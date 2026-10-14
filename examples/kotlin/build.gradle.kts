@@ -30,6 +30,6 @@ tasks.compileSass {
 
     quiet()
 
-    sourceMap = file
+    sourceMapLocation = file
     sourceMapUrls = relative
 }

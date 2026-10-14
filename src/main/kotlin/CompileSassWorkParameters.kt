@@ -15,7 +15,7 @@ interface CompileSassWorkParameters : WorkParameters {
   val entryPoints: MapProperty<File, File>
 
   val style: Property<CompileSass.Style>
-  val sourceMap: Property<CompileSass.SourceMap>
+  val sourceMapLocation: Property<CompileSass.SourceMapLocation>
   val sourceMapUrls: Property<CompileSass.SourceMapUrls>
 
   val watch: Property<Boolean>
