@@ -5,6 +5,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.findByType
@@ -14,7 +15,7 @@ import java.io.File
 import javax.inject.Inject
 
 @CacheableTask
-open class CompileSass
+abstract class CompileSass
 @Inject constructor(
   private val workerExecutor: WorkerExecutor,
   private val objects: ObjectFactory,
@@ -24,10 +25,30 @@ open class CompileSass
   @get:PathSensitive(PathSensitivity.NONE)
   val executable: Provider<RegularFile>
 
+  /**
+   * Set the [style](https://sass-lang.com/documentation/cli/dart-sass/#style)
+   * of the generated CSS. Either [expanded] (default) or [compressed].
+   */
+  @get:Input
+  abstract val style: Property<Style>
+
   enum class Style {
     expanded,
     compressed,
   }
+
+  /**
+   * Writes each selector and declaration on its own line.
+   */
+  val expanded: Style
+    @Internal get() = Style.expanded
+
+  /**
+   * Removes as many extra characters as possible,
+   * and writes the entire stylesheet on a single line.
+   */
+  val compressed: Style
+    @Internal get() = Style.compressed
 
   enum class SourceMap {
     none,
@@ -39,12 +60,6 @@ open class CompileSass
     relative,
     absolute,
   }
-
-  val expanded: Style
-    @Internal get() = Style.expanded
-
-  val compressed: Style
-    @Internal get() = Style.compressed
 
   val none: SourceMap
     @Internal get() = SourceMap.none
@@ -75,9 +90,6 @@ open class CompileSass
 
   @get:Input
   var destPath = "."
-
-  @get:Input
-  var style = Style.expanded
 
   @get:Input
   var watch = false
@@ -183,6 +195,7 @@ open class CompileSass
         .resolve(command)
         .toFile()
     })
+    style.convention(Style.expanded)
   }
 
   @TaskAction
