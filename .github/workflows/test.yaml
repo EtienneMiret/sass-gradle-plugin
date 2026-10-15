@@ -19,3 +19,30 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
       - name: Check
         run: ./gradlew check
+      - name: Check custom-paths-example
+        run: >
+          ./gradlew -p examples/custom-paths assemble
+          && unzip -t examples/custom-paths/build/libs/custom-paths-example.war
+          styles/main.css styles/main.css.map
+      - name: Check jar-example
+        run: >
+          ./gradlew -p examples/jar assemble
+          && unzip -t examples/jar/build/libs/jar-example.jar
+          style.css style.css.map
+      - name: Check kotlin-example
+        run: >
+          ./gradlew -p examples/kotlin assemble
+          && unzip -t examples/kotlin/build/libs/kotlin-example.war
+          styles/styles.css styles/styles.css.map styles/other.css styles/other.css.map
+      - name: Check multi-project
+        run: >
+          ./gradlew -p examples/multi-projects assemble
+          && unzip -t examples/multi-projects/subproject-a/build/libs/subproject-a.war
+          style.css style.css.map
+          && unzip -t examples/multi-projects/subproject-b/build/libs/subproject-b.war
+          style.css style.css.map
+      - name: Check simple-example
+        run: >
+          ./gradlew -p examples/simple assemble
+          && unzip -t examples/simple/build/libs/simple-example.war
+          style.css style.css.map
