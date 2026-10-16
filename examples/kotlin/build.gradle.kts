@@ -5,7 +5,7 @@
  */
 
 plugins {
-    "war"
+    war
     id("io.miret.etienne.sass") version "1.6.1"
 }
 
@@ -13,7 +13,6 @@ sass {
     version = "1.63.6"
     directory = file("${rootDir}/.gradle/sass-cache")
     baseUrl = "https://github.com/sass/dart-sass/releases/download"
-    noAutoCopy()
 }
 
 tasks.compileSass {

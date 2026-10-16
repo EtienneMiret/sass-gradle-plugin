@@ -19,3 +19,42 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
       - name: Check
         run: ./gradlew check
+
+  examples:
+    name: Validate ${{ matrix.example.path }} example
+    strategy:
+      matrix:
+        example:
+          - path: custom-paths
+            archive: build/libs/custom-paths-example.war
+            files: styles/main.css styles/main.css.map
+          - path: jar
+            archive: build/libs/jar-example.jar
+            files: style.css style.css.map
+          - path: kotlin
+            archive: build/libs/kotlin-example.war
+            files: styles/styles.css styles/styles.css.map styles/other.css styles/other.css.map
+          - path: multi-projects
+            archive: subproject-a/build/libs/subproject-a.war
+            files: style.css style.css.map
+          - path: simple
+            archive: build/libs/simple-example.war
+            files: style.css style.css.map
+      fail-fast: false
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - name: Git clone
+        uses: actions/checkout@v7
+      - name: Install Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version-file: .java-version
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: "Check ${{ matrix.example.path }} example"
+        working-directory: examples/${{ matrix.example.path }}
+        run: >
+          ./gradlew --build-cache --configuration-cache assemble
+          && unzip -t ${{ matrix.example.archive }} ${{ matrix.example.files }}
