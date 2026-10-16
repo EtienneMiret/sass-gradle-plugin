@@ -71,6 +71,14 @@ abstract class CompileSass
   @get:Input
   abstract val errorCss: Property<Boolean>
 
+  /**
+   * Set whether to output warnings to the console.
+   * See [--quiet](https://sass-lang.com/documentation/cli/dart-sass/#quiet).
+   * Defaults to `false`.
+   */
+  @get:Input
+  abstract val quiet: Property<Boolean>
+
   enum class Style {
     expanded,
     compressed,
@@ -141,10 +149,6 @@ abstract class CompileSass
   @get:Input
   var destPath = "."
 
-  @get:Input
-  var quiet = false
-    private set
-
   /**
    * Gradle calls this getter while the task executes (to fingerprint the inputs),
    * so it must not touch [project]:
@@ -198,8 +202,11 @@ abstract class CompileSass
     errorCss.set(false)
   }
 
+  /**
+   * Do not emit any warnings while compiling.
+   */
   fun quiet() {
-    quiet = true
+    quiet.set(true)
   }
 
   private val fileEntryPoints: Map<File, File>
@@ -245,6 +252,7 @@ abstract class CompileSass
     watch.convention(false)
     charset.convention(true)
     errorCss.convention(true)
+    quiet.convention(false)
   }
 
   @TaskAction
