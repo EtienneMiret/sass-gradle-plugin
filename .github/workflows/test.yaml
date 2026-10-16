@@ -19,30 +19,42 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
       - name: Check
         run: ./gradlew check
-      - name: Check custom-paths-example
+
+  examples:
+    name: Validate ${{ matrix.example.path }} example
+    strategy:
+      matrix:
+        example:
+          - path: custom-paths
+            archive: build/libs/custom-paths-example.war
+            files: styles/main.css styles/main.css.map
+          - path: jar
+            archive: build/libs/jar-example.jar
+            files: style.css style.css.map
+          - path: kotlin
+            archive: build/libs/kotlin-example.war
+            files: styles/styles.css styles/styles.css.map styles/other.css styles/other.css.map
+          - path: multi-projects
+            archive: subproject-a/build/libs/subproject-a.war
+            files: style.css style.css.map
+          - path: simple
+            archive: build/libs/simple-example.war
+            files: style.css style.css.map
+      fail-fast: false
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - name: Git clone
+        uses: actions/checkout@v7
+      - name: Install Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version-file: .java-version
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: "Check ${{ matrix.example.path }} example"
+        working-directory: examples/${{ matrix.example.path }}
         run: >
-          ./gradlew --build-cache --configuration-cache -p examples/custom-paths assemble
-          && unzip -t examples/custom-paths/build/libs/custom-paths-example.war
-          styles/main.css styles/main.css.map
-      - name: Check jar-example
-        run: >
-          ./gradlew --build-cache --configuration-cache -p examples/jar assemble
-          && unzip -t examples/jar/build/libs/jar-example.jar
-          style.css style.css.map
-      - name: Check kotlin-example
-        run: >
-          ./gradlew --build-cache --configuration-cache -p examples/kotlin assemble
-          && unzip -t examples/kotlin/build/libs/kotlin-example.war
-          styles/styles.css styles/styles.css.map styles/other.css styles/other.css.map
-      - name: Check multi-project
-        run: >
-          ./gradlew --build-cache --configuration-cache -p examples/multi-projects assemble
-          && unzip -t examples/multi-projects/subproject-a/build/libs/subproject-a.war
-          style.css style.css.map
-          && unzip -t examples/multi-projects/subproject-b/build/libs/subproject-b.war
-          style.css style.css.map
-      - name: Check simple-example
-        run: >
-          ./gradlew --build-cache --configuration-cache -p examples/simple assemble
-          && unzip -t examples/simple/build/libs/simple-example.war
-          style.css style.css.map
+          ./gradlew --build-cache --configuration-cache assemble
+          && unzip -t ${{ matrix.example.archive }} ${{ matrix.example.files }}
