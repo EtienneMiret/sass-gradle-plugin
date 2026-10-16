@@ -62,6 +62,15 @@ abstract class CompileSass
   @get:Input
   abstract val charset: Property<Boolean>
 
+  /**
+   * Set whether to generate a CSS file describing the error
+   * in case of compilation failure.
+   * See [--error-css](https://sass-lang.com/documentation/cli/dart-sass/#error-css).
+   * Defaults to `true`.
+   */
+  @get:Input
+  abstract val errorCss: Property<Boolean>
+
   enum class Style {
     expanded,
     compressed,
@@ -133,10 +142,6 @@ abstract class CompileSass
   var destPath = "."
 
   @get:Input
-  var errorCss = true
-    private set
-
-  @get:Input
   var quiet = false
     private set
 
@@ -185,8 +190,12 @@ abstract class CompileSass
     charset.set(false)
   }
 
+  /**
+   * Do not emit a CSS file if there is any compilation error.
+   * @see errorCss
+   */
   fun noErrorCss() {
-    errorCss = false
+    errorCss.set(false)
   }
 
   fun quiet() {
@@ -235,6 +244,7 @@ abstract class CompileSass
     sourceMapUrls.convention(SourceMapUrls.relative)
     watch.convention(false)
     charset.convention(true)
+    errorCss.convention(true)
   }
 
   @TaskAction
