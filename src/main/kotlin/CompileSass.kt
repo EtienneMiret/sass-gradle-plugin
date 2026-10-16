@@ -47,6 +47,14 @@ abstract class CompileSass
   abstract val sourceMapUrls: Property<SourceMapUrls>
 
   /**
+   * Set whether to watch the source directory for changes.
+   * See [--watch](https://sass-lang.com/documentation/cli/dart-sass/#watch).
+   * Defaults to `false`.
+   */
+  @get:Input
+  abstract val watch: Property<Boolean>
+
+  /**
    * Set whether to insert a byte-order mark or `@charset` in the generated CSS.
    * See [--no-charset](https://sass-lang.com/documentation/cli/dart-sass/#no-charset).
    * Defaults to `true`.
@@ -125,10 +133,6 @@ abstract class CompileSass
   var destPath = "."
 
   @get:Input
-  var watch = false
-    private set
-
-  @get:Input
   var errorCss = true
     private set
 
@@ -166,6 +170,13 @@ abstract class CompileSass
   }
 
   /**
+   * Keep running after the initial build and watch for changes.
+   */
+  fun watch() {
+    watch.set(true)
+  }
+
+  /**
    * Do not emit a byte-order mark nor a `@charset` declaration,
    * even if the CSS file contains non-ASCII characters.
    * @see charset
@@ -176,10 +187,6 @@ abstract class CompileSass
 
   fun noErrorCss() {
     errorCss = false
-  }
-
-  fun watch() {
-    watch = true
   }
 
   fun quiet() {
@@ -226,6 +233,7 @@ abstract class CompileSass
     style.convention(Style.expanded)
     sourceMapLocation.convention(SourceMapLocation.file)
     sourceMapUrls.convention(SourceMapUrls.relative)
+    watch.convention(false)
     charset.convention(true)
   }
 
