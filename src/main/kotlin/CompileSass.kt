@@ -39,6 +39,13 @@ abstract class CompileSass
   @get:Input
   abstract val sourceMapLocation: Property<SourceMapLocation>
 
+  /**
+   * Define how to output source map URLs.
+   * Either [relative] (default) or [absolute].
+   */
+  @get:Input
+  abstract val sourceMapUrls: Property<SourceMapUrls>
+
   enum class Style {
     expanded,
     compressed,
@@ -125,9 +132,6 @@ abstract class CompileSass
   var quiet = false
     private set
 
-  @get:Input
-  var sourceMapUrls = SourceMapUrls.relative
-
   /**
    * Gradle calls this getter while the task executes (to fingerprint the inputs),
    * so it must not touch [project]:
@@ -212,6 +216,7 @@ abstract class CompileSass
     })
     style.convention(Style.expanded)
     sourceMapLocation.convention(SourceMapLocation.file)
+    sourceMapUrls.convention(SourceMapUrls.relative)
   }
 
   @TaskAction
