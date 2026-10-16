@@ -46,6 +46,14 @@ abstract class CompileSass
   @get:Input
   abstract val sourceMapUrls: Property<SourceMapUrls>
 
+  /**
+   * Set whether to insert a byte-order mark or `@charset` in the generated CSS.
+   * See [--no-charset](https://sass-lang.com/documentation/cli/dart-sass/#no-charset).
+   * Defaults to `true`.
+   */
+  @get:Input
+  abstract val charset: Property<Boolean>
+
   enum class Style {
     expanded,
     compressed,
@@ -121,10 +129,6 @@ abstract class CompileSass
     private set
 
   @get:Input
-  var charset = true
-    private set
-
-  @get:Input
   var errorCss = true
     private set
 
@@ -161,8 +165,13 @@ abstract class CompileSass
     entryPoints.add(entryPoint)
   }
 
+  /**
+   * Do not emit a byte-order mark nor a `@charset` declaration,
+   * even if the CSS file contains non-ASCII characters.
+   * @see charset
+   */
   fun noCharset() {
-    charset = false
+    charset.set(false)
   }
 
   fun noErrorCss() {
@@ -217,6 +226,7 @@ abstract class CompileSass
     style.convention(Style.expanded)
     sourceMapLocation.convention(SourceMapLocation.file)
     sourceMapUrls.convention(SourceMapUrls.relative)
+    charset.convention(true)
   }
 
   @TaskAction
