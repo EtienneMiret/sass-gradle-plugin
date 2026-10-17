@@ -102,6 +102,13 @@ abstract class CompileSass
   @get:Input
   abstract val quiet: Property<Boolean>
 
+  /**
+   * Directory where to output generated CSS,
+   * before copy to final destination (war, jar…).
+   */
+  @get:OutputDirectory
+  abstract val outputDir: DirectoryProperty
+
   enum class Style {
     expanded,
     compressed,
@@ -160,9 +167,6 @@ abstract class CompileSass
   @get:Input
   val entryPoints: MutableList<Pair<String, String>> = mutableListOf()
 
-  @get:OutputDirectory
-  var outputDir: File = project.layout.buildDirectory.dir("sass").get().asFile
-
   /**
    * Add a [load path](https://sass-lang.com/documentation/at-rules/use/#load-paths).
    * @see loadPaths
@@ -213,7 +217,7 @@ abstract class CompileSass
   private val fileEntryPoints: Map<File, File>
     get() {
       val source = sourceDir.get().asFile.toPath()
-      val output = outputDir.toPath().resolve(destPath.get())
+      val output = outputDir.dir(destPath).get().asFile.toPath()
       if (entryPoints.isEmpty()) {
         return mapOf(
           source.toAbsolutePath().normalize().toFile() to
@@ -256,6 +260,7 @@ abstract class CompileSass
     charset.convention(true)
     errorCss.convention(true)
     quiet.convention(false)
+    outputDir.convention(project.layout.buildDirectory.dir("sass"))
   }
 
   @TaskAction
