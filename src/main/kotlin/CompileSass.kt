@@ -5,6 +5,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
@@ -24,6 +25,13 @@ abstract class CompileSass
   @get:InputFile
   @get:PathSensitive(PathSensitivity.NONE)
   val executable: Provider<RegularFile>
+
+  /**
+   * List of paths where to load SASS modules from.
+   * See [--load-path](https://sass-lang.com/documentation/cli/dart-sass/#load-path).
+   */
+  @get:Internal
+  abstract val loadPaths: ListProperty<File>
 
   /**
    * Set the [style](https://sass-lang.com/documentation/cli/dart-sass/#style)
@@ -144,8 +152,6 @@ abstract class CompileSass
   @get:PathSensitive(PathSensitivity.RELATIVE)
   var sourceDir = File(project.projectDir, "src/main/sass")
 
-  private val loadPaths: MutableList<File> = mutableListOf()
-
   @get:Input
   var destPath = "."
 
@@ -160,12 +166,16 @@ abstract class CompileSass
     get() {
       val files = objects.fileCollection()
       files.from(objects.fileTree().from(sourceDir))
-      for (loadPath in loadPaths) {
+      for (loadPath in loadPaths.get()) {
         files.from(objects.fileTree().from(loadPath))
       }
       return files
     }
 
+  /**
+   * Add a [load path](https://sass-lang.com/documentation/at-rules/use/#load-paths).
+   * @see loadPaths
+   */
   fun loadPath(loadPath: File) {
     loadPaths.add(loadPath)
   }
@@ -253,6 +263,7 @@ abstract class CompileSass
     charset.convention(true)
     errorCss.convention(true)
     quiet.convention(false)
+    loadPaths.convention(emptyList())
   }
 
   @TaskAction
