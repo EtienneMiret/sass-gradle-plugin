@@ -43,6 +43,12 @@ abstract class CompileSass
   abstract val sourceDir: DirectoryProperty
 
   /**
+   * Sub path where to write generated CSS, e.g., relative to war root
+   */
+  @get:Input
+  abstract val destPath: Property<String>
+
+  /**
    * Set the [style](https://sass-lang.com/documentation/cli/dart-sass/#style)
    * of the generated CSS. Either [expanded] (default) or [compressed].
    */
@@ -157,9 +163,6 @@ abstract class CompileSass
   @get:OutputDirectory
   var outputDir: File = project.layout.buildDirectory.dir("sass").get().asFile
 
-  @get:Input
-  var destPath = "."
-
   /**
    * Add a [load path](https://sass-lang.com/documentation/at-rules/use/#load-paths).
    * @see loadPaths
@@ -210,7 +213,7 @@ abstract class CompileSass
   private val fileEntryPoints: Map<File, File>
     get() {
       val source = sourceDir.get().asFile.toPath()
-      val output = outputDir.toPath().resolve(destPath)
+      val output = outputDir.toPath().resolve(destPath.get())
       if (entryPoints.isEmpty()) {
         return mapOf(
           source.toAbsolutePath().normalize().toFile() to
@@ -246,6 +249,7 @@ abstract class CompileSass
     })
     style.convention(Style.expanded)
     sourceDir.convention(project.layout.projectDirectory.dir("src/main/sass"))
+    destPath.convention(".")
     sourceMapLocation.convention(SourceMapLocation.file)
     sourceMapUrls.convention(SourceMapUrls.relative)
     watch.convention(false)
