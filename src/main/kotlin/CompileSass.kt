@@ -2,11 +2,10 @@ package io.miret.etienne.gradle.sass
 
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.model.ObjectFactory
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
@@ -31,8 +30,9 @@ abstract class CompileSass
    * List of paths where to load SASS modules from.
    * See [--load-path](https://sass-lang.com/documentation/cli/dart-sass/#load-path).
    */
-  @get:Internal
-  abstract val loadPaths: ListProperty<File>
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.RELATIVE)
+  abstract val loadPaths: ConfigurableFileCollection
 
   /**
    * Directory containing the SASS files to compile.
@@ -161,28 +161,11 @@ abstract class CompileSass
   var destPath = "."
 
   /**
-   * Gradle calls this getter while the task executes (to fingerprint the inputs),
-   * so it must not touch [project]:
-   * the configuration cache forbids that at execution time.
-   */
-  val inputFiles: FileCollection
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
-    get() {
-      val files = objects.fileCollection()
-      files.from(objects.fileTree().from(sourceDir))
-      for (loadPath in loadPaths.get()) {
-        files.from(objects.fileTree().from(loadPath))
-      }
-      return files
-    }
-
-  /**
    * Add a [load path](https://sass-lang.com/documentation/at-rules/use/#load-paths).
    * @see loadPaths
    */
   fun loadPath(loadPath: File) {
-    loadPaths.add(loadPath)
+    loadPaths.from(loadPath)
   }
 
   fun entryPoint(from: String, to: String) {
@@ -269,7 +252,6 @@ abstract class CompileSass
     charset.convention(true)
     errorCss.convention(true)
     quiet.convention(false)
-    loadPaths.convention(emptyList())
   }
 
   @TaskAction
