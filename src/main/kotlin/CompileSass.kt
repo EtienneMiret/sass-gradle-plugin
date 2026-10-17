@@ -2,6 +2,7 @@ package io.miret.etienne.gradle.sass
 
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.model.ObjectFactory
@@ -32,6 +33,14 @@ abstract class CompileSass
    */
   @get:Internal
   abstract val loadPaths: ListProperty<File>
+
+  /**
+   * Directory containing the SASS files to compile.
+   * Defaults to `src/main/sass`.
+   */
+  @get:InputDirectory
+  @get:PathSensitive(PathSensitivity.RELATIVE)
+  abstract val sourceDir: DirectoryProperty
 
   /**
    * Set the [style](https://sass-lang.com/documentation/cli/dart-sass/#style)
@@ -148,10 +157,6 @@ abstract class CompileSass
   @get:OutputDirectory
   var outputDir: File = project.layout.buildDirectory.dir("sass").get().asFile
 
-  @get:InputDirectory
-  @get:PathSensitive(PathSensitivity.RELATIVE)
-  var sourceDir = File(project.projectDir, "src/main/sass")
-
   @get:Input
   var destPath = "."
 
@@ -221,7 +226,7 @@ abstract class CompileSass
 
   private val fileEntryPoints: Map<File, File>
     get() {
-      val source = sourceDir.toPath()
+      val source = sourceDir.get().asFile.toPath()
       val output = outputDir.toPath().resolve(destPath)
       if (entryPoints.isEmpty()) {
         return mapOf(
@@ -257,6 +262,7 @@ abstract class CompileSass
         .toFile()
     })
     style.convention(Style.expanded)
+    sourceDir.convention(project.layout.projectDirectory.dir("src/main/sass"))
     sourceMapLocation.convention(SourceMapLocation.file)
     sourceMapUrls.convention(SourceMapUrls.relative)
     watch.convention(false)
