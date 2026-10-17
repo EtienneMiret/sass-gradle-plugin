@@ -6,6 +6,7 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFile
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
@@ -47,6 +48,12 @@ abstract class CompileSass
    */
   @get:Input
   abstract val destPath: Property<String>
+
+  /**
+   * List of input files and their corresponding output files.
+   */
+  @get:Input
+  abstract val entryPoints: ListProperty<Pair<String, String>>
 
   /**
    * Set the [style](https://sass-lang.com/documentation/cli/dart-sass/#style)
@@ -164,9 +171,6 @@ abstract class CompileSass
   val absolute: SourceMapUrls
     @Internal get() = SourceMapUrls.absolute
 
-  @get:Input
-  val entryPoints: MutableList<Pair<String, String>> = mutableListOf()
-
   /**
    * Add a [load path](https://sass-lang.com/documentation/at-rules/use/#load-paths).
    * @see loadPaths
@@ -175,10 +179,18 @@ abstract class CompileSass
     loadPaths.from(loadPath)
   }
 
+  /**
+   * Add an input and output file pair.
+   * @param from The input file path, relative to [sourceDir].
+   * @param to The output file path, relative to [destPath].
+   */
   fun entryPoint(from: String, to: String) {
     entryPoints.add(from to to)
   }
 
+  /**
+   * Add an input and output file pair.
+   */
   fun entryPoint(entryPoint: Pair<String, String>) {
     entryPoints.add(entryPoint)
   }
@@ -218,14 +230,14 @@ abstract class CompileSass
     get() {
       val source = sourceDir.get().asFile.toPath()
       val output = outputDir.dir(destPath).get().asFile.toPath()
-      if (entryPoints.isEmpty()) {
+      if (entryPoints.get().isEmpty()) {
         return mapOf(
           source.toAbsolutePath().normalize().toFile() to
               output.toAbsolutePath().normalize().toFile()
         )
       }
       val result = mutableMapOf<File, File>()
-      for ((from, to) in entryPoints) {
+      for ((from, to) in entryPoints.get()) {
         val input = source.resolve(from).toAbsolutePath().normalize().toFile()
         val new = output.resolve(to).toAbsolutePath().normalize().toFile()
         val old = result.put(input, new)
