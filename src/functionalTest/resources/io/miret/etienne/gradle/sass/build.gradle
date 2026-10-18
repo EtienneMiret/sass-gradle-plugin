@@ -81,3 +81,7 @@ task compileCustomPaths(type: CompileSass) {
   destPath = "styles"
   entryPoint "main.scss", "main.css"
 }
+
+task legacyNames(type: CompileSass) {
+  sourceMap = embed
+}

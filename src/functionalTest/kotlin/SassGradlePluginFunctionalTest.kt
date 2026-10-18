@@ -255,6 +255,13 @@ internal class SassGradlePluginFunctionalTest {
     assertThat(commandHistory).content().hasLineCount(1)
   }
 
+  @Test
+  fun `should support legacy names`() {
+    runGradle("legacyNames")
+    assertThat(commandHistory)
+      .hasContent("sass --style=expanded --embed-source-map --source-map-urls=relative $dir/src/main/sass:$dir/build/sass")
+  }
+
   /**
    * Creates a fake sass executable that will log its command line to
    * [commandHistory].

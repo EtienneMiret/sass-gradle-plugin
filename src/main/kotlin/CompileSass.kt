@@ -117,6 +117,17 @@ abstract class CompileSass
   @get:OutputDirectory
   abstract val outputDir: DirectoryProperty
 
+  /**
+   * @deprecated Use [sourceMapLocation] instead.
+   */
+  @get:Internal
+  @Deprecated(
+    message = "Use sourceMapLocation instead.",
+    replaceWith = ReplaceWith("sourceMapLocation"),
+  )
+  val sourceMap : Property<SourceMapLocation>
+    get() = sourceMapLocation
+
   enum class Style {
     expanded,
     compressed,
@@ -160,6 +171,16 @@ abstract class CompileSass
    */
   val file: SourceMapLocation
     @Internal get() = SourceMapLocation.file
+
+  /**
+   * @deprecated Use [embedded] instead.
+   */
+  @Deprecated(
+    message = "Use embedded instead.",
+    replaceWith = ReplaceWith("embedded"),
+  )
+  val embed: SourceMapLocation
+    @Internal get() = SourceMapLocation.embedded
 
   enum class SourceMapUrls {
     relative,
