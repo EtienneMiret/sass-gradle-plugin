@@ -53,6 +53,7 @@ abstract class CompileSass
    * List of input files and their corresponding output files.
    */
   @get:Input
+  @get:Optional
   abstract val entryPoints: ListProperty<Pair<String, String>>
 
   /**
@@ -226,20 +227,15 @@ abstract class CompileSass
     quiet.set(true)
   }
 
+  /**
+   * A view of [entryPoints], using absolute paths.
+   */
   private val fileEntryPoints: Map<File, File>
     get() {
-      val source = sourceDir.get().asFile.toPath()
-      val output = outputDir.dir(destPath).get().asFile.toPath()
-      if (entryPoints.get().isEmpty()) {
-        return mapOf(
-          source.toAbsolutePath().normalize().toFile() to
-              output.toAbsolutePath().normalize().toFile()
-        )
-      }
       val result = mutableMapOf<File, File>()
-      for ((from, to) in entryPoints.get()) {
-        val input = source.resolve(from).toAbsolutePath().normalize().toFile()
-        val new = output.resolve(to).toAbsolutePath().normalize().toFile()
+      for ((from, to) in entryPoints.orElse(listOf("." to ".")).get()) {
+        val input = sourceDir.file(from).get().asFile.absoluteFile.normalize()
+        val new = outputDir.dir(destPath).get().file(to).asFile.absoluteFile.normalize()
         val old = result.put(input, new)
         check(old == null || old == new) {
           "Two different outputs for input $input: $old and $new."
@@ -265,6 +261,7 @@ abstract class CompileSass
     })
     sourceDir.convention(project.layout.projectDirectory.dir("src/main/sass"))
     destPath.convention(".")
+    entryPoints.convention(null)
     style.convention(Style.expanded)
     sourceMapLocation.convention(SourceMapLocation.file)
     sourceMapUrls.convention(SourceMapUrls.relative)
