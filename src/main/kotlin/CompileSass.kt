@@ -251,14 +251,9 @@ abstract class CompileSass
     checkNotNull(sassExtension) {
       "SassGradlePluginExtension wasn't registered in any parent project."
     }
-    executable = objects.fileProperty().fileProvider(project.provider {
-      sassExtension.actualDirectory
-        .toPath()
-        .resolve(sassExtension.actualVersion)
-        .resolve("dart-sass")
-        .resolve(command)
-        .toFile()
-    })
+    executable = sassExtension.directory
+      .dir(sassExtension.version)
+      .map { it.file("dart-sass/$command") }
     sourceDir.convention(project.layout.projectDirectory.dir("src/main/sass"))
     destPath.convention(".")
     entryPoints.convention(null)
