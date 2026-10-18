@@ -21,17 +21,13 @@ class SassGradlePlugin : Plugin<Project> {
 
     val downloadSass = project.tasks
       .register("downloadSass", Download::class) {
-        val archiveName = extension.version.map { archiveName(it) }
         val archive = extension.directory
-          .zip(archiveName) { dir, name ->
-            dir.file("archive/$name")
+          .zip(extension.version) { dir, version ->
+            dir.file("archive/${archiveName(version)}")
           }
         val srcUrl = extension.baseUrl
           .zip(extension.version) { baseUrl, version ->
-            "$baseUrl/$version"
-          }
-          .zip(archiveName) { url, name ->
-            "$url/$name"
+            "$baseUrl/$version/${archiveName(version)}"
           }
         description = "Download a sass archive."
         src(srcUrl)
