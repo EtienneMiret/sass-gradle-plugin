@@ -12,7 +12,6 @@ import org.gradle.api.tasks.bundling.War
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
-import java.io.File
 
 class SassGradlePlugin : Plugin<Project> {
 

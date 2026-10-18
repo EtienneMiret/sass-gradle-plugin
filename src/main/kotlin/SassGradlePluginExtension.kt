@@ -2,9 +2,7 @@ package io.miret.etienne.gradle.sass
 
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
-import java.io.File
 
 abstract class SassGradlePluginExtension(project: Project) {
 
