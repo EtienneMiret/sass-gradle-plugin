@@ -20,7 +20,6 @@ import javax.inject.Inject
 abstract class CompileSass
 @Inject constructor(
   private val workerExecutor: WorkerExecutor,
-  private val objects: ObjectFactory,
 ) : DefaultTask() {
 
   @get:InputFile
