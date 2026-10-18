@@ -262,9 +262,11 @@ abstract class CompileSass
   private val fileEntryPoints: Map<File, File>
     get() {
       val result = mutableMapOf<File, File>()
+      val fromDir = sourceDir.get()
+      val toDir = outputDir.dir(destPath).get()
       for ((from, to) in entryPoints.orElse(listOf("." to ".")).get()) {
-        val input = sourceDir.file(from).get().asFile.absoluteFile.normalize()
-        val new = outputDir.dir(destPath).get().file(to).asFile.absoluteFile.normalize()
+        val input = fromDir.file(from).asFile.absoluteFile.normalize()
+        val new = toDir.file(to).asFile.absoluteFile.normalize()
         val old = result.put(input, new)
         check(old == null || old == new) {
           "Two different outputs for input $input: $old and $new."
