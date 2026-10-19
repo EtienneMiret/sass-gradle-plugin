@@ -34,6 +34,9 @@ class WithWarTest {
     WithWarTest::class.java.getResourceAsStream("settings-with-war.gradle").use { input ->
       Files.copy(input!!, projectDir.resolve("settings.gradle"))
     }
+    WithWarTest::class.java.getResourceAsStream("gradle.properties").use { input ->
+      Files.copy(input!!, projectDir.resolve("gradle.properties"))
+    }
   }
 
   @Test
@@ -54,8 +57,15 @@ class WithWarTest {
 
   @Test
   fun `should not copy css to war`() {
-
     val entries = buildWar("war-no-auto-copy.gradle")
+
+    assertThat(entries)
+      .doesNotContain("style.css")
+  }
+
+  @Test
+  fun `should not copy css to war configured before sass extension`() {
+    val entries = buildWar("war-late-no-auto-copy.gradle")
 
     assertThat(entries)
       .doesNotContain("style.css")

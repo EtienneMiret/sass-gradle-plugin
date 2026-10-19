@@ -1,51 +1,49 @@
 package io.miret.etienne.gradle.sass
 
 import org.gradle.api.Project
-import java.io.File
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Property
 
-open class SassGradlePluginExtension(project: Project) {
+abstract class SassGradlePluginExtension(project: Project) {
 
-  var version: String? = "1.54.0"
+  /**
+   * The Dart Sass version to use.
+   */
+  abstract val version: Property<String>
 
-  internal val actualVersion: String
-    get() = checkNotNull(version) {
-      "Use the default sass.version or set it to a non-null value."
-    }
+  /**
+   * The directory where to install Dart Sass.
+   */
+  abstract val directory: DirectoryProperty
 
-  var directory: File?
+  /**
+   * The base URL to use when downloading Dart Sass.
+   */
+  abstract val baseUrl: Property<String>
 
-  internal val actualDirectory: File
-    get() = checkNotNull(directory) {
-      "Use the default sass.directory or set it to a non-null value."
-    }
+  /**
+   * Whether to automatically copy generated CSS files to WARs.
+   */
+  abstract val autoCopy: Property<Boolean>
 
-  var baseUrl: String? = "https://github.com/sass/dart-sass/releases/download"
-
-  internal val actualBaseUrl: String
-    get() = checkNotNull(baseUrl) {
-      "Use the default sass.baseUrl or set it to a non-null value."
-    }
-
-  var autoCopy: Boolean? = true
-
-  internal val actualAutoCopy: Boolean
-    get() = checkNotNull(autoCopy) {
-      "Use the default sass.autoCopy or set it to a non-null value."
-    }
+  /**
+   * Do not automatically copy generated CSS files to WARs.
+   */
+  fun noAutoCopy() {
+    autoCopy.set(false)
+  }
 
   init {
     val projectPath = project.rootDir
       .toPath()
       .relativize(project.projectDir.toPath())
-    this.directory = project.rootDir
-      .toPath()
-      .resolve(".gradle/sass")
-      .resolve(projectPath)
-      .toFile()
-  }
-
-  fun noAutoCopy() {
-    this.autoCopy = false
+    val dir = project.layout
+      .projectDirectory
+      .dir("${project.rootDir}/.gradle/sass/$projectPath")
+    version.convention("1.54.0")
+    directory.convention(dir)
+    baseUrl.convention("https://github.com/sass/dart-sass/releases/download")
+    autoCopy.convention(true)
   }
 
 }

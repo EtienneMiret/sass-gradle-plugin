@@ -91,11 +91,11 @@ compileSass {
   // (Default is to emit them)
   quiet ()
 
-  // Source map style:
+  // Source map location:
   //  - file: output source map in a separate file (default)
-  //  - embed: embed source map in CSS
+  //  - embedded: embed source map in CSS
   //  - none: do not emit source map.
-  sourceMap = file
+  sourceMapLocation = file
 
   // How to link source maps to source files [relative (default) or absolute]:
   sourceMapUrls = relative

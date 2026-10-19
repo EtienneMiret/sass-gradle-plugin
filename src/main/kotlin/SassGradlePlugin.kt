@@ -12,7 +12,6 @@ import org.gradle.api.tasks.bundling.War
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
-import java.io.File
 
 class SassGradlePlugin : Plugin<Project> {
 
@@ -22,14 +21,16 @@ class SassGradlePlugin : Plugin<Project> {
 
     val downloadSass = project.tasks
       .register("downloadSass", Download::class) {
-        val archiveName = archiveName(extension.actualVersion)
-        val archive = extension.actualDirectory
-          .toPath()
-          .resolve("archive")
-          .resolve(archiveName)
-          .toFile()
+        val archive = extension.directory
+          .zip(extension.version) { dir, version ->
+            dir.file("archive/${archiveName(version)}")
+          }
+        val srcUrl = extension.baseUrl
+          .zip(extension.version) { baseUrl, version ->
+            "$baseUrl/$version/${archiveName(version)}"
+          }
         description = "Download a sass archive."
-        src("${extension.actualBaseUrl}/${extension.actualVersion}/$archiveName")
+        src(srcUrl)
         dest(archive)
         tempAndMove(true)
         overwrite(false)
@@ -49,7 +50,7 @@ class SassGradlePlugin : Plugin<Project> {
         description = "Unpack and install a sass archive."
         dependsOn(downloadSass)
         from(downloadedFiles)
-        into(File(extension.actualDirectory, extension.actualVersion))
+        into(extension.directory.dir(extension.version))
         outputs.cacheIf { true }
       }
     compileSass(project, extension, installSass)
@@ -71,10 +72,15 @@ class SassGradlePlugin : Plugin<Project> {
     project.tasks
       .withType(War::class)
       .configureEach {
-        if (extension.actualAutoCopy) {
-          dependsOn(compileSass)
-          from(compileSass.map { it.outputDir })
+        val taskProvider = extension.autoCopy
+          .zip(compileSass) { copy, sass ->
+            if (copy) listOf(sass) else emptyList()
+          }
+        val fileProvider = taskProvider.map { tasks ->
+          tasks.map { task -> task.outputDir }
         }
+        dependsOn(taskProvider)
+        from(fileProvider)
       }
   }
 

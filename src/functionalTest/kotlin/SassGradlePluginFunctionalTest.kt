@@ -48,6 +48,9 @@ internal class SassGradlePluginFunctionalTest {
     SassGradlePluginFunctionalTest::class.java.getResourceAsStream("build.gradle").use { input ->
       Files.copy(input!!, projectDir.resolve("build.gradle"))
     }
+    SassGradlePluginFunctionalTest::class.java.getResourceAsStream("gradle.properties").use { input ->
+      Files.copy(input!!, projectDir.resolve("gradle.properties"))
+    }
   }
 
   @Test
@@ -253,6 +256,13 @@ internal class SassGradlePluginFunctionalTest {
     runGradle("--build-cache", "compileCustomSass")
 
     assertThat(commandHistory).content().hasLineCount(1)
+  }
+
+  @Test
+  fun `should support legacy names`() {
+    runGradle("legacyNames")
+    assertThat(commandHistory)
+      .hasContent("sass --style=expanded --embed-source-map --source-map-urls=relative $dir/src/main/sass:$dir/build/sass")
   }
 
   /**

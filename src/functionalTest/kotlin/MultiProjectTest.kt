@@ -79,6 +79,7 @@ class MultiProjectTest {
       "lib/src/main/sass/bar.scss",
       "build.gradle",
       "settings.gradle",
+      "gradle.properties",
     )
 
     copyResources("/io/miret/etienne/gradle/sass/multi-project", files, projectDir)

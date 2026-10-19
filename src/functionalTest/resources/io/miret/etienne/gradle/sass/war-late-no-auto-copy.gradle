@@ -1,0 +1,16 @@
+plugins {
+  id 'io.miret.etienne.sass'
+  id 'war'
+}
+
+version = '1.0.0'
+
+// Configures the war task eagerly, before the sass extension is configured.
+war {
+}
+
+sass {
+  version = '1.23.7'
+  baseUrl = System.getenv("URL")
+  noAutoCopy ()
+}
