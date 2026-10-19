@@ -72,10 +72,15 @@ class SassGradlePlugin : Plugin<Project> {
     project.tasks
       .withType(War::class)
       .configureEach {
-        if (extension.autoCopy.get()) {
-          dependsOn(compileSass)
-          from(compileSass.map { it.outputDir })
+        val taskProvider = extension.autoCopy
+          .zip(compileSass) { copy, sass ->
+            if (copy) listOf(sass) else emptyList()
+          }
+        val fileProvider = taskProvider.map { tasks ->
+          tasks.map { task -> task.outputDir }
         }
+        dependsOn(taskProvider)
+        from(fileProvider)
       }
   }
 
