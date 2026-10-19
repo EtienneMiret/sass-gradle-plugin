@@ -48,6 +48,9 @@ internal class SassGradlePluginFunctionalTest {
     SassGradlePluginFunctionalTest::class.java.getResourceAsStream("build.gradle").use { input ->
       Files.copy(input!!, projectDir.resolve("build.gradle"))
     }
+    SassGradlePluginFunctionalTest::class.java.getResourceAsStream("gradle.properties").use { input ->
+      Files.copy(input!!, projectDir.resolve("gradle.properties"))
+    }
   }
 
   @Test

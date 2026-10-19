@@ -45,6 +45,7 @@ class MultipleApplyTest {
       "c/build.gradle",
       "build.gradle",
       "settings.gradle",
+      "gradle.properties",
     )
     copyResources("/io/miret/etienne/gradle/sass/multiple-apply", projectResources, projectDir)
   }

@@ -34,6 +34,9 @@ class WithWarTest {
     WithWarTest::class.java.getResourceAsStream("settings-with-war.gradle").use { input ->
       Files.copy(input!!, projectDir.resolve("settings.gradle"))
     }
+    WithWarTest::class.java.getResourceAsStream("gradle.properties").use { input ->
+      Files.copy(input!!, projectDir.resolve("gradle.properties"))
+    }
   }
 
   @Test
