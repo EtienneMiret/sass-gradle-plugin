@@ -40,7 +40,7 @@ abstract class SassGradlePluginExtension(project: Project) {
     val dir = project.layout
       .projectDirectory
       .dir("${project.rootDir}/.gradle/sass/$projectPath")
-    version.convention("1.54.0")
+    version.convention("1.105.2")
     directory.convention(dir)
     baseUrl.convention("https://github.com/sass/dart-sass/releases/download")
     autoCopy.convention(true)

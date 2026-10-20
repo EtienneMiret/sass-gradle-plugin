@@ -24,5 +24,5 @@ jar {
  * it’s probably a good idea to specify a recent sass release.
  */
 sass {
-  version = '1.35.2'
+  version = '1.105.2'
 }
