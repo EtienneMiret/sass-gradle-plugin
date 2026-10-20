@@ -10,7 +10,7 @@ plugins {
 }
 
 sass {
-    version = "1.63.6"
+    version = "1.105.2"
     directory = file("${rootDir}/.gradle/sass-cache")
     baseUrl = "https://github.com/sass/dart-sass/releases/download"
 }

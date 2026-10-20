@@ -10,6 +10,6 @@ plugins {
 }
 
 sass {
-  version = "1.54.4"
+  version = "1.105.2"
   // Your customization here
 }
