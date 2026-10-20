@@ -45,7 +45,7 @@ tasks.test {
   useJUnitPlatform()
 }
 
-version = "2.0.0-SNAPSHOT"
+version = "2.0.0"
 group = "io.miret.etienne.gradle"
 
 gradlePlugin {
