@@ -16,9 +16,9 @@ sass {
 }
 
 tasks.compileSass {
-    outputDir = file("${buildDir}/generated-css")
+    outputDir = layout.buildDirectory.dir("generated-css")
     destPath = "styles"
-    sourceDir = file("${rootDir}/src/main/styles")
+    sourceDir = file("${projectDir}/src/main/styles")
 
     entryPoint("main.scss", "styles.css")
     // You can also specify a pair

@@ -13,10 +13,10 @@ plugins {
 }
 
 /*
- * Note that this creates an additional `watch` task. The `compileSass` task
+ * Note that this creates an additional `watchSass` task. The `compileSass` task
  * still exists with the default configuration.
  */
-task watchSass (type: CompileSass) {
+tasks.register ("watchSass", CompileSass) {
   dependsOn installSass
   watch ()
 }
