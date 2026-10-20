@@ -1,18 +1,26 @@
 package io.miret.etienne.gradle.sass
 
 import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.anyUrl
+import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
-import org.apache.tools.ant.taskdefs.condition.Os
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.api.io.TempDir
+import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.io.OutputStreamWriter
+import java.io.StringWriter
+import java.io.Writer
 import java.nio.file.FileVisitResult
 import java.nio.file.FileVisitor
 import java.nio.file.Files
@@ -21,6 +29,9 @@ import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.PosixFilePermissions
+import java.util.zip.GZIPOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 internal class SassGradlePluginFunctionalTest {
 
@@ -31,10 +42,7 @@ internal class SassGradlePluginFunctionalTest {
 
   @BeforeEach
   fun startServer() {
-    val archive = if (Os.isFamily(Os.FAMILY_WINDOWS)) "archive.zip" else "archive.tgz"
-    SassGradlePluginFunctionalTest::class.java.getResourceAsStream(archive).use { input ->
-      server = startSassServer(anyUrl(), input!!.readAllBytes())
-    }
+    server = startSassServer(anyUrl(), createArchive())
   }
 
   @AfterEach
@@ -55,12 +63,22 @@ internal class SassGradlePluginFunctionalTest {
 
   @Test
   fun `should install sass`() {
+    val expected = StringWriter().let { writer ->
+      writeExecutable(writer)
+      writer.toString()
+    }
+
     runGradle("installSass")
 
     assertThat(projectDir.resolve(".gradle/sass/archive"))
       .isNotEmptyDirectory()
-    assertThat(projectDir.resolve(".gradle/sass/some.specific.version/dart-sass/sass"))
-      .hasContent("foo\nbar\nbaz\n")
+    val file = if (OS.current() == OS.WINDOWS) {
+      "sass.bat"
+    } else {
+      "sass"
+    }
+    assertThat(projectDir.resolve(".gradle/sass/some.specific.version/dart-sass/$file"))
+      .hasContent(expected)
   }
 
   @Test
@@ -68,6 +86,63 @@ internal class SassGradlePluginFunctionalTest {
     runGradle("downloadSass")
 
     server.verify(getRequestedFor(urlMatching("/some\\.specific\\.version/dart-sass-some\\.specific\\.version-.*")))
+  }
+
+  @Test
+  fun `should re-run on version change`() {
+    server.stubFor(
+      get(urlMatching("/v1/.*"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(createArchive("v1"))
+        )
+    )
+    server.stubFor(
+      get(urlMatching("/v2/.*"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(createArchive("v2"))
+        )
+    )
+
+    runGradle(projectDir, mapOf(
+      "URL" to server.baseUrl(),
+      "VERSION" to "v1",
+    ), "compileSass")
+    runGradle(projectDir, mapOf(
+      "URL" to server.baseUrl(),
+      "VERSION" to "v2",
+    ), "compileSass")
+
+    server.verify(getRequestedFor(urlMatching("/v1/dart-sass-v1-.*")))
+    server.verify(getRequestedFor(urlMatching("/v2/dart-sass-v2-.*")))
+    assertThat(commandHistory)
+      .content()
+      .hasLineCount(2)
+  }
+
+  /**
+   * The version change, so sass is downloaded again.
+   * But both version resolve to the same binary, so compilation is done once.
+   */
+  @Test
+  fun `should re-download on version change`() {
+    runGradle(projectDir, mapOf(
+      "URL" to server.baseUrl(),
+      "VERSION" to "v1",
+    ), "compileSass")
+    runGradle(projectDir, mapOf(
+      "URL" to server.baseUrl(),
+      "VERSION" to "v2",
+    ), "compileSass")
+
+    server.verify(getRequestedFor(urlMatching("/v1/.*")))
+    server.verify(getRequestedFor(urlMatching("/v2/.*")))
+    assertThat(commandHistory)
+      .content()
+      .hasLineCount(1)
   }
 
   @Test
@@ -271,14 +346,13 @@ internal class SassGradlePluginFunctionalTest {
    */
   @BeforeEach
   fun createExecutable() {
-    val out = commandHistory
     val sassDir = projectDir.resolve(".gradle/sass/some.specific.version/dart-sass")
     Files.createDirectories(sassDir)
     Files.createDirectories(projectDir.resolve("src/main/sass"))
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    if (OS.current() == OS.WINDOWS) {
       val sass = sassDir.resolve("sass.bat")
       Files.newBufferedWriter(sass, StandardOpenOption.CREATE).use { writer ->
-        writer.write("@echo sass %* >> $out\n")
+        writeExecutable(writer)
       }
     } else {
       val sass = sassDir.resolve("sass")
@@ -288,9 +362,49 @@ internal class SassGradlePluginFunctionalTest {
         )
       )
       Files.newBufferedWriter(sass).use { writer ->
-        writer.write("#!/bin/sh\n")
-        writer.write("echo sass $@ >> $out\n")
+        writeExecutable(writer)
       }
+    }
+  }
+
+  private fun createArchive(comment: String? = null): ByteArray {
+    val archive = ByteArrayOutputStream()
+    if (OS.current() == OS.WINDOWS) {
+      ZipOutputStream(archive).use { zip ->
+        zip.putNextEntry(ZipEntry("dart-sass/sass.bat"))
+        OutputStreamWriter(zip).use { writer ->
+          writeExecutable(writer, comment)
+        }
+      }
+    } else {
+      GZIPOutputStream(archive).use { gzip ->
+        TarArchiveOutputStream(gzip).use { tar ->
+          val entry = TarArchiveEntry("dart-sass/sass")
+          val data = ByteArrayOutputStream().let { exec ->
+            OutputStreamWriter(exec).use { writer ->
+              writeExecutable(writer, comment)
+            }
+            exec.toByteArray()
+          }
+          entry.mode = EXEC_FILE_MODE
+          entry.size = data.size.toLong()
+          tar.putArchiveEntry(entry)
+          tar.write(data)
+          tar.closeArchiveEntry()
+        }
+      }
+    }
+    return archive.toByteArray()
+  }
+
+  private fun writeExecutable(writer: Writer, comment: String? = null) {
+    if (OS.current() == OS.WINDOWS) {
+      comment?.let { writer.write("REM $it\n") }
+      writer.write("@echo sass %* >> $commandHistory\n")
+    } else {
+      writer.write("#!/bin/sh\n")
+      comment?.let { writer.write("# $it\n") }
+      writer.write("echo sass $@ >> $commandHistory\n")
     }
   }
 
