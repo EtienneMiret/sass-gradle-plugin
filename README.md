@@ -8,6 +8,11 @@ to `build/sass`.
 If the [War Plugin][3] is also applied, the generated CSS will also be added to
 the war artifact.
 
+It supports the [configuration cache][4].
+Its tasks (`downloadSass`, `installSass` and `compileSass`) are also cacheable,
+so with the [build cache][5] enabled, they reuse outputs from previous builds
+instead of downloading dart-sass or compiling sass again.
+
 ## Requirements
 
 ### Version 2.x
@@ -180,3 +185,5 @@ or to one of its subprojects.
 [1]: https://gradle.org/
 [2]: https://sass-lang.com/dart-sass
 [3]: https://docs.gradle.org/current/userguide/war_plugin.html
+[4]: https://docs.gradle.org/current/userguide/configuration_cache.html
+[5]: https://docs.gradle.org/current/userguide/build_cache.html
