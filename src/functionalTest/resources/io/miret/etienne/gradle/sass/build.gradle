@@ -5,7 +5,7 @@ plugins {
 }
 
 sass {
-  version = 'some.specific.version'
+  version = System.getenv("VERSION") ?: 'some.specific.version'
   baseUrl = System.getenv("URL")
 }
 
