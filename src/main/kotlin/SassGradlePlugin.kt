@@ -4,6 +4,7 @@ import de.undercouch.gradle.tasks.download.Download
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.apache.tools.ant.taskdefs.condition.Os.FAMILY_MAC
 import org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
@@ -12,6 +13,8 @@ import org.gradle.api.tasks.bundling.War
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
+import java.nio.file.Files
+import java.nio.file.Path
 
 class SassGradlePlugin : Plugin<Project> {
 
@@ -85,24 +88,52 @@ class SassGradlePlugin : Plugin<Project> {
   }
 
   private fun archiveName(version: String) =
-    "dart-sass-$version-$osName-$archName.$archiveExtension"
+    "dart-sass-$version-$osName-$archName$libcSuffix.$archiveExtension"
 
   private val osName: String
     get() = when {
       Os.isFamily(FAMILY_WINDOWS) -> "windows"
       Os.isFamily(FAMILY_MAC) -> "macos"
+      isAndroid -> "android"
       else -> "linux"
     }
 
+  /**
+   * On Android (e.g. under Termux), the JVM reports itself as Linux, so
+   * look for the Android runtime launcher instead.
+   */
+  private val isAndroid: Boolean
+    get() = Files.exists(Path.of("/system/bin/app_process"))
+
   private val archName: String
     get() {
-      val arch = System.getProperty("os.arch")
-      return when {
-        arch.contains("arm") || arch.contains("aarch64")
-          -> "arm64"
-        arch.contains("64") -> "x64"
-        else -> "ia32"
+      val arch = System.getProperty("os.arch").lowercase()
+      return when (arch) {
+        "aarch64", "arm64" -> "arm64"
+        "amd64", "x86_64", "x64" -> "x64"
+        "x86", "i386", "i486", "i586", "i686", "ia32" -> "ia32"
+        "riscv64" -> "riscv64"
+        else -> when {
+          arch.startsWith("arm") -> "arm"
+          else -> throw GradleException(
+            "Unsupported architecture for Dart Sass: $arch"
+          )
+        }
       }
+    }
+
+  /**
+   * Dart Sass publishes separate Linux builds for musl-based distributions
+   * (such as Alpine), whose dynamic loader is `/lib/ld-musl-<arch>.so.1`.
+   */
+  private val libcSuffix: String
+    get() {
+      val lib = Path.of("/lib")
+      if (osName != "linux" || !Files.isDirectory(lib)) return ""
+      val musl = Files.list(lib).use { paths ->
+        paths.anyMatch { it.fileName.toString().startsWith("ld-musl-") }
+      }
+      return if (musl) "-musl" else ""
     }
 
   private val archiveExtension: String
