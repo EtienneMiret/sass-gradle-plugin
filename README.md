@@ -6,7 +6,12 @@ official [Dart Sass][2] compiler.
 In its default configuration, it will compile sass files from `src/main/sass`
 to `build/sass`.
 If the [War Plugin][3] is also applied, the generated CSS will also be added to
-the war artifact. 
+the war artifact.
+
+It supports the [configuration cache][4].
+Its tasks (`downloadSass`, `installSass` and `compileSass`) are also cacheable,
+so with the [build cache][5] enabled, they reuse outputs from previous builds
+instead of downloading dart-sass or compiling sass again.
 
 ## Requirements
 
@@ -19,6 +24,11 @@ the war artifact.
 
 * Gradle >= 6.0
 * Java >= 1.8
+
+If you use this version,
+make sure you read the documentation on [branch 1.x].
+
+[branch 1.x]: https://github.com/EtienneMiret/sass-gradle-plugin/blob/1.x/README.md
 
 ## Usage
 
@@ -37,14 +47,17 @@ sass {
   // dart-sass version to use:
   version = '1.105.2'
 
-  // Directory where to install dart-sass:
+  // Directory where to download and install dart-sass
+  // (when the plugin is applied to a subproject,
+  // the default is ${rootDir}/.gradle/sass/<subproject path>):
   directory = file ("${rootDir}/.gradle/sass")
 
   // Base URL where to download dart-sass from:
   baseUrl = 'https://github.com/sass/dart-sass/releases/download'
-  
-  // Disable automagic copying to war (default is enabled):
-  noAutoCopy ()
+
+  // Automagically copy generated CSS to the war
+  // (set to false, or call noAutoCopy (), to disable):
+  autoCopy = true
 }
 ```
 
@@ -53,16 +66,18 @@ You may also configure the `compileSass` task:
 ```groovy
 compileSass {
   // Directory where to output generated CSS:
-  outputDir = project.file ("${buildDir}/sass")
+  outputDir = layout.buildDirectory.dir ('sass')
 
-  // Sub path where to copy generated CSS, eg relative to war root:
+  // Sub path under outputDir where to write generated CSS,
+  // e.g., relative to war root:
   destPath = "."
 
   // Source directory containing sass to compile:
-  sourceDir = project.file ("${projectDir}/src/main/sass")
+  sourceDir = file ('src/main/sass')
 
   // Specify entry points for sass compilation
-  // (default is to compile all .scss files in sourceDir
+  // (default is to compile all .scss and .sass files in sourceDir,
+  // except partials whose name starts with an underscore,
   // and output a .css file with the same name for each)
   // Those paths are relative to sourceDir and outputDir/destPath respectively.
   entryPoint "main.scss", "styles.css"
@@ -70,25 +85,30 @@ compileSass {
 
   // Add a directory to sass load path (default is empty):
   loadPath project.file ('sass-lib')
-  loadPath project.file ('/var/lib/compass')
+  loadPath project.file ('node_modules')
 
   // Set the output style:
   // Possible values are “expanded” and “compressed”, default is “expanded”.
   style = expanded
 
-  // Don’t emit a @charset for CSS with non-ASCII chars (default to emit):
+  // Don’t emit a @charset declaration nor a byte-order mark
+  // for CSS with non-ASCII chars (default is to emit them).
+  // Same as charset = false:
   noCharset ()
 
-  // When an error occurs, do not emit a stylesheet describing it:
-  // (Default to emit)
+  // When an error occurs, do not emit a stylesheet describing it
+  // (default is to emit it).
+  // Same as errorCss = false:
   noErrorCss ()
 
   // Watch sass files in sourceDir for changes
-  // (Default is to not to watch, compile once and terminate)
+  // (default is not to watch, but to compile once and terminate).
+  // Same as watch = true:
   watch ()
 
-  // Prevent sass to emit warnings
-  // (Default is to emit them)
+  // Prevent sass from emitting warnings
+  // (default is to emit them).
+  // Same as quiet = true:
   quiet ()
 
   // Source map location:
@@ -97,7 +117,8 @@ compileSass {
   //  - none: do not emit source map.
   sourceMapLocation = file
 
-  // How to link source maps to source files [relative (default) or absolute]:
+  // How to link source maps to source files [relative (default) or absolute]
+  // (ignored when sourceMapLocation is none):
   sourceMapUrls = relative
 }
 ```
@@ -135,21 +156,34 @@ When writing the build script in Kotlin instead of Groovy,
 the syntax is different.
 See [examples/kotlin](examples/kotlin/build.gradle.kts).
 
-### In a multi-projects build
+### In a multi-project build
 
-You can apply this plugin to a multi-projects build.
-If only one subproject need it, just apply it to said subproject.
+You can apply this plugin to a multi-project build.
+If only one subproject needs it, just apply it to said subproject.
 Otherwise, apply it to the root project,
 or to a common ancestor of all subprojects that need it.
+
+Applying the plugin to a project registers a `compileSass` task
+in that project and in every one of its subprojects,
+all sharing the same dart-sass installation and `sass {}` configuration.
+In each of those projects, the generated CSS is added to the war artifacts,
+unless `noAutoCopy ()` was called.
 See [examples/multi-projects](examples/multi-projects/build.gradle).
 
 ### Watching for changes
 
-The `watch ()` option prevents the `compileSass` task to terminates.
-It is therefore better used on a copy of this task that isn’t a dependency
-of the `assemble` task.
+The `watch ()` option prevents the `compileSass` task from terminating.
+It is therefore better used on a separate task of type `CompileSass`
+that isn’t a dependency of the `assemble` task.
 See [examples/watch](examples/watch/build.gradle).
 
-[1]: https://gradle.org/ 
+Such an additional task must depend on `installSass`,
+so that dart-sass is installed before it runs.
+It must also belong to a project where the plugin is applied,
+or to one of its subprojects.
+
+[1]: https://gradle.org/
 [2]: https://sass-lang.com/dart-sass
 [3]: https://docs.gradle.org/current/userguide/war_plugin.html
+[4]: https://docs.gradle.org/current/userguide/configuration_cache.html
+[5]: https://docs.gradle.org/current/userguide/build_cache.html
